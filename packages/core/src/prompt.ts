@@ -90,7 +90,7 @@ ${fields}
  * that a backend added later defaults to the honest branch instead of silently
  * advertising a tool it does not have.
  *
- * OpenCode alone also carries the structured-output contract: Claude and
+ * OpenCode and pi also carry the structured-output contract: Claude and
  * Codex constrain the decode natively (`outputFormat` / `outputSchema`), so
  * telling them about wrapper tags would only invite stray tags in prose.
  */
@@ -100,7 +100,7 @@ export function systemPrompt(agent: AgentKind): string {
       ? "If you need the selection details again, call the `get_element_context` tool."
       : "The full selection details are included in the instruction below — re-read them there if you need them again."
   );
-  return agent === "opencode"
+  return agent === "opencode" || agent === "pi"
     ? `${base}\n\n${structuredOutputInstruction()}`
     : base;
 }

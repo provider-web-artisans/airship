@@ -44,6 +44,7 @@ const AGENT_META: { icon: IconName; kind: AgentKind; label: string }[] = [
   { icon: "claude", kind: "claude", label: "Claude" },
   { icon: "codex", kind: "codex", label: "Codex" },
   { icon: "opencode", kind: "opencode", label: "OpenCode" },
+  { icon: "pi", kind: "pi", label: "pi" },
 ];
 
 /** The label a picked model gets in the button's tooltip. */
@@ -157,7 +158,10 @@ export function customModelRow(
     // The form each backend takes, shown rather than explained: opencode drops
     // an id it cannot attribute to a provider, and the placeholder is the
     // cheapest place to say so.
-    placeholder: agent === "opencode" ? "provider/model" : "model id or alias",
+    placeholder:
+      agent === "opencode" || agent === "pi"
+        ? "provider/model"
+        : "model id or alias",
     spellcheck: "false",
     type: "text",
   }) as HTMLInputElement;

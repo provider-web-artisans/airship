@@ -18,6 +18,7 @@ export { namesProvider } from "./providers/opencode-events";
 export type { OpencodeSettings } from "./providers/opencode-server";
 /** Stops the shared `opencode serve` child, which otherwise outlives the run. */
 export { shutdownServer as shutdownOpencodeServer } from "./providers/opencode-server";
+export type { PiSettings } from "./providers/pi";
 export type {
   RunEditEvents,
   RunEditInput,

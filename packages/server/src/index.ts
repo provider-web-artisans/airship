@@ -6,6 +6,7 @@ import type { AddressInfo, Socket } from "node:net";
 import type {
   CodexSettings,
   OpencodeSettings,
+  PiSettings,
   RunEditResult,
 } from "@airship/core";
 import {
@@ -62,6 +63,7 @@ export type {
   CodexSettings,
   ModelProbeOptions,
   OpencodeSettings,
+  PiSettings,
 } from "@airship/core";
 /** Re-exported so the CLI depends only on @airship/server. */
 export { checkAuth, listModels } from "@airship/core";
@@ -115,6 +117,8 @@ export interface ServerOptions {
   models?: Partial<Record<AgentKind, string>>;
   /** OpenCode-only passthrough knobs; opaque here by design. */
   opencode?: OpencodeSettings;
+  /** pi-only passthrough knobs; opaque here by design. */
+  pi?: PiSettings;
   /** Port Airship's proxy listens on. */
   port: number;
   /** Sandbox edits to the project and cut network access. A launch-level
@@ -172,6 +176,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     }
     catalogue ??= listAllModels(cwd, {
       opencode: opts.opencode,
+      pi: opts.pi,
       safe: opts.safe,
     })
       .then((groups) =>
@@ -388,6 +393,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         maxTurns: opts.maxTurns,
         model,
         opencode: opts.opencode,
+        pi: opts.pi,
         resumeSessionId,
         safe: opts.safe,
       },

@@ -21,6 +21,13 @@ export function safetyBanner(agent: AgentKind, safe: boolean): string {
   if (agent === "codex") {
     return `  ${style.green("Sandboxed:")} edits are confined to the project and the network is off.\n`;
   }
+  if (agent === "pi") {
+    return (
+      `  ${style.yellow("Narrowed:")} pi runs with its file and shell tools only. There is no OS\n` +
+      "    sandbox and no edit or command screen on this backend — the agent can\n" +
+      "    still write anywhere you can and reach the network.\n"
+    );
+  }
   // claude and opencode share the same guards, and neither cuts the socket.
   return (
     `  ${style.yellow("Screened:")} edits are confined to the project and destructive commands are\n` +

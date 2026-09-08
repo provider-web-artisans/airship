@@ -178,22 +178,22 @@ is the box model, the rules that are actually hitting the element, and your own 
 Pick one with `--agent`, or switch between them as you go. They are not equal, and Airship tells
 you what you're giving up at startup.
 
-| | `claude` (default) | `codex` | `opencode` |
-| --- | --- | --- | --- |
-| Watch it write | word by word | the whole reply at once, at the end | word by word |
-| Pick up an old chat | yes | yes | yes |
-| Branch off a chat | yes | starts fresh, and says so | yes, history kept |
-| Shows what it cost | in dollars | tokens only | in dollars |
-| `--effort` | yes | yes | **ignored** |
-| `--max-turns`, `--max-budget` | yes | **ignored** | **ignored** |
-| `--model` | a model name | a model name | needs the `provider/model` form |
-| Lists its own models | yes | **no** — Airship ships a list | yes, the ones you are signed in to |
-| `--safe` | checks each edit and command | **real sandbox** | asks before each edit and command |
-| Install | included | included | **you install it yourself** |
+| | `claude` (default) | `codex` | `opencode` | `pi` |
+| --- | --- | --- | --- | --- |
+| Watch it write | word by word | the whole reply at once, at the end | word by word | word by word |
+| Pick up an old chat | yes | yes | yes | yes |
+| Branch off a chat | yes | starts fresh, and says so | yes, history kept | yes, history kept |
+| Shows what it cost | in dollars | tokens only | in dollars | in dollars when its catalogue prices the model |
+| `--effort` | yes | yes | **ignored** | yes, as pi's thinking level |
+| `--max-turns`, `--max-budget` | yes | **ignored** | **ignored** | **ignored** |
+| `--model` | a model name | a model name | needs the `provider/model` form | needs pi's `provider/model` form |
+| Lists its own models | yes | **no** — Airship ships a list | yes, the ones you are signed in to | yes, from its `models.json` and logins |
+| `--safe` | checks each edit and command | **real sandbox** | asks before each edit and command | **narrows the toolset only** |
+| Install | included | included | **you install it yourself** | **you install it yourself** |
 
 Undo is Airship's, not the agent's. It keeps the previous version of every file it touches, so
-undo works on all three. One catch: `codex` and `opencode` get that previous version from Git,
-so **undo needs your project to be a Git repo on those two**. Airship warns you at startup.
+undo works on all four. One catch: `codex`, `opencode` and `pi` get that previous version from
+Git, so **undo needs your project to be a Git repo on those three**. Airship warns you at startup.
 
 One more `opencode` quirk: the one-line summary and the follow-up suggestion chips come from a
 JSON block the model is asked to append to its reply. A model that ignores the instruction
@@ -210,6 +210,7 @@ Airship reuses whatever the chosen agent already has, and warns at startup if it
 | `claude` | `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, or a `claude` login (`~/.claude`) |
 | `codex` | `CODEX_API_KEY`, `OPENAI_API_KEY`, or a `codex login` (`~/.codex/auth.json`) |
 | `opencode` | the `opencode` binary on PATH, **plus** a provider key or an `opencode auth login` |
+| `pi` | the `pi` binary on PATH (`npm i -g @earendil-works/pi-coding-agent`), with a provider configured in its `models.json` or via `/login`; `--pi-agent-dir` points it at a shared config directory |
 
 OpenCode is a separate install — `brew install sst/tap/opencode` or `npm i -g opencode-ai` —
 and accepts `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENCODE_API_KEY`, `OPENROUTER_API_KEY`,

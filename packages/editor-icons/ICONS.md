@@ -451,6 +451,7 @@ icons:
   claude: local/claude.svg
   codex: local/codex.svg
   opencode: local/opencode.svg
+  pi: local/pi.svg
 
 ---
 
@@ -672,6 +673,8 @@ conventions with nothing reconciling them.
   picker. Unlike the rest these are not ours to redraw; they name a backend in
   the UI. Path data from `@lobehub/icons-static-svg`; the marks remain the
   trademarks of Anthropic, OpenAI and the opencode project respectively.
+- **`pi`** — a plain π glyph standing in for the pi coding agent, which has no
+  published mark. Drawn here, filled, within the same 12.8-unit box.
 
 ## Sizing
 

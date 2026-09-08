@@ -20,7 +20,7 @@ import net from "node:net";
 import type { ArgsDef } from "citty";
 import { CliError, didYouMean, EXIT } from "./errors";
 
-export const AGENTS = ["claude", "codex", "opencode"] as const;
+export const AGENTS = ["claude", "codex", "opencode", "pi"] as const;
 export const EFFORTS = [
   "minimal",
   "low",
@@ -216,6 +216,14 @@ export const FLAGS: readonly FlagSpec[] = [
     type: "string",
   },
   {
+    defaultHint: "--model, then the agent's own",
+    group: "BACKEND",
+    help: "Model for the pi backend, in pi's own `provider/model` form.",
+    hint: "<provider/model>",
+    name: "pi-model",
+    type: "string",
+  },
+  {
     defaultHint: "bundled",
     group: "BACKEND",
     help: "Path to the `codex` binary.",
@@ -259,6 +267,22 @@ export const FLAGS: readonly FlagSpec[] = [
     help: "JSON file merged into the opencode server config.",
     hint: "<file>",
     name: "opencode-config",
+    type: "string",
+  },
+  {
+    defaultHint: "found on PATH",
+    group: "BACKEND",
+    help: "Path to the `pi` binary.",
+    hint: "<path>",
+    name: "pi-path",
+    type: "string",
+  },
+  {
+    defaultHint: "~/.pi/agent",
+    group: "BACKEND",
+    help: "pi config directory (PI_CODING_AGENT_DIR) holding models.json and settings.json.",
+    hint: "<dir>",
+    name: "pi-agent-dir",
     type: "string",
   },
   {

@@ -37,54 +37,63 @@ export interface SeedModel {
  * barrel for no gain — `models.test.ts` asserts these keys against
  * `AGENT_KINDS` instead, which catches the drift the import would have.
  */
-export const SEED_MODELS: Record<"claude" | "codex" | "opencode", SeedModel[]> =
-  {
-    claude: [
-      { hint: "latest", id: "opus", label: "Opus" },
-      { hint: "latest", id: "sonnet", label: "Sonnet" },
-      { hint: "latest", id: "haiku", label: "Haiku" },
-      { hint: "latest", id: "fable", label: "Fable" },
-      { hint: "1M", id: "claude-opus-5", label: "Claude Opus 5" },
-      { hint: "1M", id: "claude-sonnet-5", label: "Claude Sonnet 5" },
-      { hint: "1M", id: "claude-fable-5", label: "Claude Fable 5" },
-      { hint: "1M", id: "claude-mythos-5", label: "Claude Mythos 5" },
-      { hint: "1M", id: "claude-opus-4-8", label: "Claude Opus 4.8" },
-      { hint: "1M", id: "claude-opus-4-7", label: "Claude Opus 4.7" },
-      { hint: "1M", id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
-      { hint: "1M", id: "claude-opus-4-6", label: "Claude Opus 4.6" },
-      {
-        hint: "200K",
-        id: "claude-opus-4-5",
-        label: "Claude Opus 4.5 (latest)",
-      },
-      {
-        hint: "200K",
-        id: "claude-haiku-4-5",
-        label: "Claude Haiku 4.5 (latest)",
-      },
-    ],
-    codex: [
-      { hint: "1.1M", id: "gpt-5.6-luna", label: "GPT-5.6 Luna" },
-      { hint: "1.1M", id: "gpt-5.6-sol", label: "GPT-5.6 Sol" },
-      { hint: "1.1M", id: "gpt-5.6-terra", label: "GPT-5.6 Terra" },
-      { hint: "1.1M", id: "gpt-5.5", label: "GPT-5.5" },
-      { hint: "1.1M", id: "gpt-5.5-pro", label: "GPT-5.5 Pro" },
-      { hint: "400K", id: "gpt-5.4-mini", label: "GPT-5.4 mini" },
-      { hint: "400K", id: "gpt-5.4-nano", label: "GPT-5.4 nano" },
-      { hint: "1.1M", id: "gpt-5.4", label: "GPT-5.4" },
-      { hint: "1.1M", id: "gpt-5.4-pro", label: "GPT-5.4 Pro" },
-      { hint: "400K", id: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
-    ],
-    opencode: [
-      { hint: "1M", id: "anthropic/claude-opus-5", label: "Claude Opus 5" },
-      { hint: "1.1M", id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna" },
-      { hint: "1.1M", id: "openai/gpt-5.6-sol", label: "GPT-5.6 Sol" },
-      { hint: "1.1M", id: "openai/gpt-5.6-terra", label: "GPT-5.6 Terra" },
-      { hint: "1M", id: "anthropic/claude-sonnet-5", label: "Claude Sonnet 5" },
-      { hint: "1M", id: "anthropic/claude-fable-5", label: "Claude Fable 5" },
-      { hint: "1M", id: "anthropic/claude-mythos-5", label: "Claude Mythos 5" },
-      { hint: "1M", id: "anthropic/claude-opus-4-8", label: "Claude Opus 4.8" },
-      { hint: "1.1M", id: "openai/gpt-5.5", label: "GPT-5.5" },
-      { hint: "1.1M", id: "openai/gpt-5.5-pro", label: "GPT-5.5 Pro" },
-    ],
-  };
+export const SEED_MODELS: Record<
+  "claude" | "codex" | "opencode" | "pi",
+  SeedModel[]
+> = {
+  claude: [
+    { hint: "latest", id: "opus", label: "Opus" },
+    { hint: "latest", id: "sonnet", label: "Sonnet" },
+    { hint: "latest", id: "haiku", label: "Haiku" },
+    { hint: "latest", id: "fable", label: "Fable" },
+    { hint: "1M", id: "claude-opus-5", label: "Claude Opus 5" },
+    { hint: "1M", id: "claude-sonnet-5", label: "Claude Sonnet 5" },
+    { hint: "1M", id: "claude-fable-5", label: "Claude Fable 5" },
+    { hint: "1M", id: "claude-mythos-5", label: "Claude Mythos 5" },
+    { hint: "1M", id: "claude-opus-4-8", label: "Claude Opus 4.8" },
+    { hint: "1M", id: "claude-opus-4-7", label: "Claude Opus 4.7" },
+    { hint: "1M", id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+    { hint: "1M", id: "claude-opus-4-6", label: "Claude Opus 4.6" },
+    {
+      hint: "200K",
+      id: "claude-opus-4-5",
+      label: "Claude Opus 4.5 (latest)",
+    },
+    {
+      hint: "200K",
+      id: "claude-haiku-4-5",
+      label: "Claude Haiku 4.5 (latest)",
+    },
+  ],
+  codex: [
+    { hint: "1.1M", id: "gpt-5.6-luna", label: "GPT-5.6 Luna" },
+    { hint: "1.1M", id: "gpt-5.6-sol", label: "GPT-5.6 Sol" },
+    { hint: "1.1M", id: "gpt-5.6-terra", label: "GPT-5.6 Terra" },
+    { hint: "1.1M", id: "gpt-5.5", label: "GPT-5.5" },
+    { hint: "1.1M", id: "gpt-5.5-pro", label: "GPT-5.5 Pro" },
+    { hint: "400K", id: "gpt-5.4-mini", label: "GPT-5.4 mini" },
+    { hint: "400K", id: "gpt-5.4-nano", label: "GPT-5.4 nano" },
+    { hint: "1.1M", id: "gpt-5.4", label: "GPT-5.4" },
+    { hint: "1.1M", id: "gpt-5.4-pro", label: "GPT-5.4 Pro" },
+    { hint: "400K", id: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
+  ],
+  opencode: [
+    { hint: "1M", id: "anthropic/claude-opus-5", label: "Claude Opus 5" },
+    { hint: "1.1M", id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna" },
+    { hint: "1.1M", id: "openai/gpt-5.6-sol", label: "GPT-5.6 Sol" },
+    { hint: "1.1M", id: "openai/gpt-5.6-terra", label: "GPT-5.6 Terra" },
+    { hint: "1M", id: "anthropic/claude-sonnet-5", label: "Claude Sonnet 5" },
+    { hint: "1M", id: "anthropic/claude-fable-5", label: "Claude Fable 5" },
+    { hint: "1M", id: "anthropic/claude-mythos-5", label: "Claude Mythos 5" },
+    { hint: "1M", id: "anthropic/claude-opus-4-8", label: "Claude Opus 4.8" },
+    { hint: "1.1M", id: "openai/gpt-5.5", label: "GPT-5.5" },
+    { hint: "1.1M", id: "openai/gpt-5.5-pro", label: "GPT-5.5 Pro" },
+  ],
+  // pi enumerates its own catalogue at runtime (`pi --list-models`); this
+  // seed only covers the case where that probe fails. Hand-maintained: pi is
+  // not on models.dev, so `make models:refresh` leaves this block alone.
+  pi: [
+    { hint: "1M", id: "anthropic/claude-sonnet-5", label: "Claude Sonnet 5" },
+    { hint: "1.1M", id: "openai/gpt-5.5", label: "GPT-5.5" },
+  ],
+};

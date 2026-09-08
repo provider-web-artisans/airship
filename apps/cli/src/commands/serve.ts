@@ -14,6 +14,7 @@ import {
   checkAuth,
   type Effort,
   type OpencodeSettings,
+  type PiSettings,
   startServer,
 } from "@airship/server";
 import { defineCommand } from "citty";
@@ -68,6 +69,9 @@ export const SERVE_FLAGS: readonly string[] = [
   "opencode-url",
   "opencode-agent",
   "opencode-config",
+  "pi-model",
+  "pi-path",
+  "pi-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -89,6 +93,7 @@ export interface ServeOptions {
   models: Partial<Record<AgentKind, string>>;
   open: boolean;
   opencode: OpencodeSettings;
+  pi: PiSettings;
   port?: number;
   quiet: boolean;
   safe: boolean;
@@ -150,6 +155,7 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
       opencode: opencodeModel
         ? requireModelRef(opencodeModel, "opencode-model")
         : model,
+      pi: asString(settings, "pi-model") ?? model,
     },
     open: asBoolean(settings, "open"),
     opencode: {
@@ -158,6 +164,10 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
       opencodePath: asString(settings, "opencode-path"),
       url: asString(settings, "opencode-url"),
     } satisfies OpencodeSettings,
+    pi: {
+      agentDir: asString(settings, "pi-agent-dir"),
+      piPath: asString(settings, "pi-path"),
+    } satisfies PiSettings,
     port: port ? requirePort(port, "port") : undefined,
     quiet: asBoolean(settings, "quiet"),
     safe: asBoolean(settings, "safe"),
@@ -339,6 +349,7 @@ export const serve = defineCommand({
         model: opts.model,
         models: opts.models,
         opencode: opts.opencode,
+        pi: opts.pi,
         port,
         safe: opts.safe,
         surface: opts.surface,

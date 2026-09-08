@@ -13,6 +13,7 @@
  * rejection.
  */
 
+import { AGENT_KINDS } from "@airship/protocol";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAdapter } from "./agent";
 import {
@@ -151,7 +152,7 @@ describe("listAllModels", () => {
 
     const groups = await listAllModels("/tmp");
 
-    expect(groups).toHaveLength(3);
+    expect(groups).toHaveLength(AGENT_KINDS.length);
     for (const group of groups) {
       expect(group.note).toBe("Cannot find module 'codex'");
       // A degraded menu still has to be a menu.

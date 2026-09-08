@@ -48,12 +48,13 @@ describe("toServeOptions — models", () => {
     expect(models.opencode).toBeUndefined();
   });
 
-  it("spreads a bare --model to all three backends", () => {
+  it("spreads a bare --model to every backend", () => {
     const { models } = optionsFor({ model: "sonnet" });
     expect(models).toEqual({
       claude: "sonnet",
       codex: "sonnet",
       opencode: "sonnet",
+      pi: "sonnet",
     });
   });
 

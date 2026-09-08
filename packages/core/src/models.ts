@@ -30,6 +30,7 @@ import { AGENT_KINDS } from "@airship/protocol";
 import { SEED_MODELS } from "@airship/protocol/models";
 import { getAdapter } from "./agent";
 import type { OpencodeSettings } from "./providers/opencode-server";
+import type { PiSettings } from "./providers/pi";
 
 /**
  * How long a single backend gets to answer.
@@ -43,6 +44,7 @@ const PROBE_TIMEOUT_MS = 15_000;
 
 export interface ModelProbeOptions {
   opencode?: OpencodeSettings;
+  pi?: PiSettings;
   safe?: boolean;
 }
 
@@ -141,6 +143,32 @@ export function fromOpencodeProviders(
   return rows.sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/**
+ * pi's answer → rows.
+ *
+ * `pi --list-models` prints an aligned table: `provider  model  context
+ * max-out  thinking  images`, one row per model, header first. Ids are joined
+ * into the `provider/model` form pi's own `--model` accepts.
+ */
+const PI_TABLE_GAP = /\s{2,}/;
+
+export function fromPiModelList(output: string): ModelOption[] {
+  const rows: ModelOption[] = [];
+  for (const line of output.split("\n").slice(1)) {
+    const cells = line.trim().split(PI_TABLE_GAP);
+    if (cells.length < 2 || !cells[0] || !cells[1]) {
+      continue;
+    }
+    const [provider, model, context] = cells;
+    rows.push({
+      hint: context && context !== "-" ? context : provider,
+      id: `${provider}/${model}`,
+      label: model,
+    });
+  }
+  return rows.sort((a, b) => a.id.localeCompare(b.id));
+}
+
 // -- Probes -------------------------------------------------------------------
 
 /**
@@ -166,6 +194,31 @@ async function probeClaude(cwd: string): Promise<ModelOption[]> {
     }
   }
   throw new Error("session did not initialize");
+}
+
+async function probePi(
+  cwd: string,
+  opts: ModelProbeOptions
+): Promise<ModelOption[]> {
+  const { resolvePiBinary } = await import("./providers/pi");
+  const { execFile } = await import("node:child_process");
+  const binary = resolvePiBinary(opts.pi?.piPath);
+  if (!binary) {
+    throw new Error("pi is not on PATH");
+  }
+  const env = { ...process.env };
+  if (opts.pi?.agentDir) {
+    env.PI_CODING_AGENT_DIR = opts.pi.agentDir;
+  }
+  const output = await new Promise<string>((resolve, reject) => {
+    execFile(
+      binary,
+      ["--list-models", "--no-extensions", "--no-skills"],
+      { cwd, env, maxBuffer: 4 * 1024 * 1024 },
+      (err, stdout) => (err ? reject(err) : resolve(stdout))
+    );
+  });
+  return fromPiModelList(output);
 }
 
 async function probeOpencode(
@@ -223,6 +276,12 @@ export async function listModels(
     if (agent === "claude") {
       const models = await withTimeout(probeClaude(cwd), "claude");
       return { agent, models: models.length ? models : seed };
+    }
+    if (agent === "pi") {
+      const models = await withTimeout(probePi(cwd, opts), "pi");
+      return models.length
+        ? { agent, models }
+        : { agent, models: seed, note: "No models configured" };
     }
     const { default: fallback, models } = await withTimeout(
       probeOpencode(cwd, opts),

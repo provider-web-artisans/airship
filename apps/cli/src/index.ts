@@ -58,7 +58,7 @@ Only codex confines writes at the OS level. On claude and opencode --safe screen
     title: "Sandboxing",
   },
   {
-    body: "opencode is a separate install (`brew install sst/tap/opencode`); airship finds it on PATH. Its --model wants the `provider/model` form, and it has no reasoning-effort control, so --effort, --max-turns and --max-budget do not apply.",
+    body: "opencode is a separate install (`brew install sst/tap/opencode`); airship finds it on PATH. Its --model wants the `provider/model` form, and it has no reasoning-effort control, so --effort, --max-turns and --max-budget do not apply.\n\npi is a separate install too (`npm i -g @earendil-works/pi-coding-agent`). Its --model takes pi's `provider/model` form, including custom providers from models.json — point --pi-agent-dir at a config directory to ship one. --effort maps onto pi's thinking level; --max-turns and --max-budget do not apply, and --safe only narrows its toolset.",
     title: "Backends",
   },
   {

@@ -40,6 +40,8 @@ export const INIT_FLAGS: readonly string[] = [
   "opencode-path",
   "opencode-url",
   "opencode-config",
+  "pi-path",
+  "pi-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -85,6 +87,10 @@ export const init = defineCommand({
           config: readOpencodeConfig(asString(settings, "opencode-config")),
           opencodePath: asString(settings, "opencode-path"),
           url: asString(settings, "opencode-url"),
+        },
+        pi: {
+          agentDir: asString(settings, "pi-agent-dir"),
+          piPath: asString(settings, "pi-path"),
         },
         safe: asBoolean(settings, "safe"),
       },
