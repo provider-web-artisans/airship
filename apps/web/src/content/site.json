@@ -1,7 +1,7 @@
 {
   "name": "Airship",
   "tagline": "Visual editor for your codebase.",
-  "description": "Airship puts an infinite design canvas in front of your dev server. Point at any element, describe the change in plain English, and Claude Code, Codex, OpenCode, pi or DeepSeek Harness edits the source file — with streaming status, inline diffs, and undo.",
+  "description": "Airship puts an infinite design canvas in front of your dev server. Point at any element, describe the change in plain English, and DeepSeek Harness, Claude Code, Codex, OpenCode or pi edits the source file — with streaming status, inline diffs, and undo.",
   "origin": "https://airship.design",
   "installCommand": "npx @airshiplabs/cli --target 3000",
   "nodeVersion": "22.13",

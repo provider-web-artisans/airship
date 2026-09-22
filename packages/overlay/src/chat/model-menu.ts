@@ -41,11 +41,11 @@ export interface ModelMenuDeps {
 
 /** Product marks, in the order the picker offers the backends. */
 const AGENT_META: { icon: IconName; kind: AgentKind; label: string }[] = [
+  { icon: "dsh", kind: "dsh", label: "DeepSeek" },
   { icon: "claude", kind: "claude", label: "Claude" },
   { icon: "codex", kind: "codex", label: "Codex" },
   { icon: "opencode", kind: "opencode", label: "OpenCode" },
   { icon: "pi", kind: "pi", label: "pi" },
-  { icon: "dsh", kind: "dsh", label: "DSH" },
 ];
 
 /** The label a picked model gets in the button's tooltip. */

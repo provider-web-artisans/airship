@@ -17,6 +17,7 @@
  */
 
 import net from "node:net";
+import { DEFAULT_AGENT } from "@airship/protocol";
 import type { ArgsDef } from "citty";
 import { CliError, didYouMean, EXIT } from "./errors";
 
@@ -135,12 +136,14 @@ export const FLAGS: readonly FlagSpec[] = [
   },
   {
     alias: "a",
-    defaultHint: "claude",
+    defaultHint: DEFAULT_AGENT,
     group: "AGENT",
     // Comma-joined rather than `a|b|c`: the pipe form has no break point, so a
     // narrow terminal cannot wrap it and the line runs past the edge. The
     // pipe form still belongs in the placeholder, where it is short.
-    help: `Coding agent: ${AGENTS.join(", ")}.`,
+    // Listed rather than `AGENTS.join`: the array is the protocol's kind order,
+    // which grows by appending, and the help should lead with the default.
+    help: `Coding agent: ${DEFAULT_AGENT}, ${AGENTS.filter((a) => a !== DEFAULT_AGENT).join(", ")}.`,
     hint: "<name>",
     name: "agent",
     type: "string",

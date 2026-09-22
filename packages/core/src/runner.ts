@@ -27,6 +27,7 @@ import type {
   Usage,
   VisualEditTarget,
 } from "@airship/protocol";
+import { DEFAULT_AGENT } from "@airship/protocol";
 import { failureText, getAdapter } from "./agent";
 import { DiffCapture } from "./diff-capture";
 import { buildEditPrompt } from "./prompt";
@@ -115,7 +116,7 @@ export async function runEdit(
   input: RunEditInput,
   events: RunEditEvents = {}
 ): Promise<RunEditResult> {
-  const kind = input.agent ?? "claude";
+  const kind = input.agent ?? DEFAULT_AGENT;
   const adapter = await getAdapter(kind);
 
   // A backend without a pre-tool hook cannot snapshot a file before the agent
@@ -226,7 +227,7 @@ export async function rewindEdit(params: {
   cwd: string;
   sessionId: string;
 }): Promise<{ error?: string; ok: boolean }> {
-  const adapter = await getAdapter(params.agent ?? "claude");
+  const adapter = await getAdapter(params.agent ?? DEFAULT_AGENT);
   if (!adapter.rewind) {
     return {
       error: `${adapter.kind} has no native file checkpointing`,

@@ -41,15 +41,26 @@ function labels(items: MenuItem[]): string[] {
   return items.map((i) => i.label);
 }
 
+/** One backend's group, by name — never by position, which the picker orders. */
+function groupFor(agent: AgentKind, models: Record<string, string> = {}) {
+  const group = groupsFor("claude", models).groups.find(
+    (g) => g.group === agent
+  );
+  if (!group) {
+    throw new Error(`no group for ${agent}`);
+  }
+  return group;
+}
+
 describe("modelGroups", () => {
   it("offers every harness, in picker order", () => {
     const { groups } = groupsFor("claude");
     expect(groups.map((g) => g.group)).toEqual([
+      "dsh",
       "claude",
       "codex",
       "opencode",
       "pi",
-      "dsh",
     ]);
   });
 
@@ -74,22 +85,22 @@ describe("modelGroups", () => {
   });
 
   it("shows the daemon's resolved default as the Default row's hint", () => {
-    const [claude] = groupsFor("claude").groups;
+    const claude = groupFor("claude");
     expect(claude.items[0].hint).toBe("opus");
   });
 
   it("falls back to a phrase when no default was resolved", () => {
-    const [, codex] = groupsFor("codex").groups;
+    const codex = groupFor("codex");
     expect(codex.items[0].hint).toBe("the backend decides");
   });
 
   it("marks Default as on when no model is picked for that backend", () => {
-    const [claude] = groupsFor("claude").groups;
+    const claude = groupFor("claude");
     expect(claude.items[0].on).toBe(true);
   });
 
   it("marks the picked model instead, once there is one", () => {
-    const [claude] = groupsFor("claude", { claude: "sonnet" }).groups;
+    const claude = groupFor("claude", { claude: "sonnet" });
     expect(claude.items[0].on).toBe(false);
     expect(claude.items.find((i) => i.label === "Sonnet")?.on).toBe(true);
   });
@@ -97,10 +108,8 @@ describe("modelGroups", () => {
   it("marks each backend's own model, not the active one's", () => {
     // The reason the state is per harness at all: Claude's pick must not light
     // up a row in Codex's group.
-    const [claude, codex] = groupsFor("claude", {
-      claude: "sonnet",
-      codex: "gpt-5.6",
-    }).groups;
+    const claude = groupFor("claude", { claude: "sonnet", codex: "gpt-5.6" });
+    const codex = groupFor("codex", { claude: "sonnet", codex: "gpt-5.6" });
     expect(claude.items.find((i) => i.label === "Sonnet")?.on).toBe(true);
     expect(codex.items.find((i) => i.label === "GPT-5.6")?.on).toBe(true);
   });
@@ -108,7 +117,7 @@ describe("modelGroups", () => {
   it("shows a backend's note as a disabled row when it has no models", () => {
     // An empty group reads as a broken picker; a group that says "Not signed
     // in" reads as something the user can go and fix.
-    const [, , opencode] = groupsFor("claude").groups;
+    const opencode = groupFor("opencode");
     expect(labels(opencode.items)).toEqual(["Default", "Not signed in"]);
     expect(opencode.items[1].disabled).toBe(true);
   });
@@ -121,24 +130,27 @@ describe("modelGroups", () => {
 
   it("picks the backend and the model together", () => {
     const { groups, pick } = groupsFor("claude");
-    const [, codex] = groups;
-    codex.items.find((i) => i.label === "GPT-5.6")?.run();
+    groups
+      .find((g) => g.group === "codex")
+      ?.items.find((i) => i.label === "GPT-5.6")
+      ?.run();
     expect(pick).toHaveBeenCalledWith({ agent: "codex", model: "gpt-5.6" });
   });
 
   it("sends an empty model for the Default row", () => {
     const { groups, pick } = groupsFor("claude");
-    groups[0].items[0].run();
+    groups.find((g) => g.group === "claude")?.items[0].run();
     expect(pick).toHaveBeenCalledWith({ agent: "claude", model: "" });
   });
 
   it("carries each backend's mark on its header", () => {
+    // In the picker's order, which the default backend leads.
     expect(groupsFor("claude").groups.map((g) => g.icon)).toEqual([
+      "dsh",
       "claude",
       "codex",
       "opencode",
       "pi",
-      "dsh",
     ]);
   });
 });

@@ -10,6 +10,7 @@
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_AGENT } from "@airship/protocol";
 import { type AgentKind, checkAuth, gitStatus } from "@airship/server";
 import { defineCommand } from "citty";
 import {
@@ -104,7 +105,7 @@ async function checkAgents(
         : await checkAuth(agent as AgentKind);
       // Only the agent actually being used is a failure; the other two not
       // being installed is the normal state and must not read as broken.
-      const isPreferred = agent === (preferred ?? "claude");
+      const isPreferred = agent === (preferred ?? DEFAULT_AGENT);
       let level: Level = "ok";
       if (!auth.ok) {
         level = isPreferred ? "fail" : "warn";
@@ -159,7 +160,8 @@ function binaryRow(
   }
   const found = existsSync(binary);
   // Same rule as the agent rows: only the backend in use can fail the run.
-  const blocked: Level = agent === (preferred ?? "claude") ? "fail" : "warn";
+  const blocked: Level =
+    agent === (preferred ?? DEFAULT_AGENT) ? "fail" : "warn";
   return {
     hint: found
       ? undefined
@@ -289,7 +291,7 @@ function checkConfig(configSource: string | undefined): Check {
  */
 function checkGit(cwd: string, preferred: AgentKind | undefined): Check[] {
   const status = gitStatus(cwd);
-  const needsGit = (preferred ?? "claude") !== "claude";
+  const needsGit = (preferred ?? DEFAULT_AGENT) !== "claude";
   const blocked: Level = needsGit ? "fail" : "warn";
 
   if (!status.installed) {
