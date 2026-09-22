@@ -73,13 +73,13 @@ describe("toServeOptions — models", () => {
     const { models } = optionsFor({
       "claude-model": "opus",
       "codex-model": "gpt-5.3-codex",
-      "dsh-model": "deepseek-v4-flash",
+      "dsh-model": "deepseek-flash",
       "opencode-model": "anthropic/claude-sonnet-5",
     });
     expect(models).toEqual({
       claude: "opus",
       codex: "gpt-5.3-codex",
-      dsh: "deepseek-v4-flash",
+      dsh: "deepseek-flash",
       opencode: "anthropic/claude-sonnet-5",
     });
   });
