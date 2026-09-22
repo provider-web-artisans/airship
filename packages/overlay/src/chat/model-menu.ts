@@ -45,7 +45,7 @@ const AGENT_META: { icon: IconName; kind: AgentKind; label: string }[] = [
   { icon: "claude", kind: "claude", label: "Claude" },
   { icon: "codex", kind: "codex", label: "Codex" },
   { icon: "opencode", kind: "opencode", label: "OpenCode" },
-  { icon: "pi", kind: "pi", label: "pi" },
+  { icon: "pi", kind: "pi", label: "Pi" },
 ];
 
 /** The label a picked model gets in the button's tooltip. */
