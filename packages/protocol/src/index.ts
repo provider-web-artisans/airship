@@ -42,6 +42,15 @@ export const AgentKindSchema = z.enum(AGENT_KINDS);
 export type AgentKind = z.infer<typeof AgentKindSchema>;
 
 /**
+ * The backend a turn runs on when nothing names one.
+ *
+ * Declared here rather than repeated as a `?? "claude"` at each resolution
+ * point: the daemon, the CLI help and the overlay all have to agree, and they
+ * only agree if there is one place to change.
+ */
+export const DEFAULT_AGENT: AgentKind = "dsh";
+
+/**
  * Reasoning effort, as the *union* of what the backends accept rather than the
  * intersection: Claude has no `minimal` and Codex has no `max`, and
  * intersecting would silently break existing `--effort max` invocations. Each

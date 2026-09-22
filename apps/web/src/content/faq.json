@@ -25,7 +25,7 @@
     {
       "id": "agents",
       "question": "Can I use my existing coding agent?",
-      "answer": "Yes. Airship works with Claude Code, Codex, OpenCode, pi and DeepSeek Harness, so you don't need to change your agent just to use the visual editor."
+      "answer": "Yes. Airship works with DeepSeek Harness, Claude Code, Codex, OpenCode and pi, so you don't need to change your agent just to use the visual editor."
     },
     {
       "id": "safety",

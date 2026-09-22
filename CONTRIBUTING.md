@@ -216,7 +216,7 @@ lives on while catching nothing the PR gate would not.
 ## Architecture
 
 ```
-canvas shell ──ws──► proxy/server ──► @airship/core ──► claude │ codex │ opencode │ pi │ dsh ──► edits your files
+canvas shell ──ws──► proxy/server ──► @airship/core ──► dsh │ claude │ codex │ opencode │ pi ──► edits your files
   ├ frame 1440×900     (serve + route)   (adapter)          (agent backend)                    (diff + undo)
   └ frame  393×852
     (live app, pick element)

@@ -452,7 +452,7 @@ icons:
   codex: local/codex.svg
   opencode: local/opencode.svg
   pi: local/pi.svg
-  dsh: local/dsh.svg
+  dsh: local/deepseek.svg
 
 ---
 
@@ -676,12 +676,12 @@ conventions with nothing reconciling them.
   trademarks of Anthropic, OpenAI and the opencode project respectively.
 - **`pi`** — a plain π glyph standing in for the pi coding agent, which has no
   published mark. Drawn here, filled, within the same 12.8-unit box.
-- **`dsh`** — a DSH wordmark for the DeepSeek Harness backend, which has no
-  published mark either. Three letters on one filled path, cut heavy and wide:
-  the picker draws this mark at `xs` in the menu and `sm` on the button, where
-  the counters are gone and only the silhouette is left. The S is the only one
-  with rounded corners and the D the only one with a bowl, which is what keeps
-  the three apart at that size.
+- **`dsh`** — the DeepSeek fish, for the DeepSeek Harness backend. Taken from
+  the harness's own published mark (`FISH_LOGO_PATH` in
+  `@deepseek-ai/dsh-client-ui-primitives`, Apache-2.0), so it is the vendor's
+  geometry rather than a redrawing of it. The path is a single 23.16×17.04
+  silhouette; the generator refits that wide box onto the same 12.8-unit
+  optical size as every other mark. It remains DeepSeek's trademark.
 
 ## Sizing
 

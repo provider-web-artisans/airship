@@ -37,6 +37,7 @@ import {
   type ClientMessage,
   ClientMessageSchema,
   type CreateJobRequest,
+  DEFAULT_AGENT,
   type Effort,
   type ElementContext,
   type GitHealth,
@@ -231,7 +232,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   wss.on("connection", (ws: WebSocket) => {
     clients.add(ws);
     send(ws, {
-      defaultAgent: opts.agent ?? "claude",
+      defaultAgent: opts.agent ?? DEFAULT_AGENT,
       jobs: jobs.snapshots(),
       type: "hello",
     });
@@ -833,7 +834,7 @@ export function resolveTarget(
   request: Pick<CreateJobRequest, "agent" | "model">,
   opts: Pick<ServerOptions, "agent" | "model" | "models">
 ): { agent: AgentKind; model?: string } {
-  const agent = request.agent ?? opts.agent ?? "claude";
+  const agent = request.agent ?? opts.agent ?? DEFAULT_AGENT;
   return {
     agent,
     model: request.model ?? opts.models?.[agent] ?? opts.model,

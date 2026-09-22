@@ -7,6 +7,7 @@
  * process or binding a port, so a typo never leaves a dev server orphaned.
  */
 
+import { DEFAULT_AGENT } from "@airship/protocol";
 import {
   type AgentKind,
   type AirshipSurface,
@@ -126,7 +127,7 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
   const host = asString(settings, "host");
 
   return {
-    agent: (agent ? requireEnum(agent, "agent") : "claude") as AgentKind,
+    agent: (agent ? requireEnum(agent, "agent") : DEFAULT_AGENT) as AgentKind,
     // Split locally: the env layer has no repeatable form, so
     // AIRSHIP_ALLOWED_HOSTS=a,b arrives as one string.
     allowedHosts: asList(settings, "allowed-hosts").flatMap((entry) =>

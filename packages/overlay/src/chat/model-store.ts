@@ -21,11 +21,11 @@ const KEY = `${PREFIX}-model`;
 
 /** The agents a stored value may name, in the picker's order. */
 const KINDS: readonly AgentKind[] = [
+  "dsh",
   "claude",
   "codex",
   "opencode",
   "pi",
-  "dsh",
 ];
 
 export interface ModelPickState {

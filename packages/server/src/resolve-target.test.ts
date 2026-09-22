@@ -1,3 +1,4 @@
+import { DEFAULT_AGENT } from "@airship/protocol";
 import { describe, expect, it } from "vitest";
 import { modelRefusal, resolveTarget } from "./index";
 
@@ -37,8 +38,8 @@ describe("resolveTarget — the agent", () => {
     expect(resolveTarget({}, OPTS).agent).toBe("claude");
   });
 
-  it("falls back to claude when nothing names one", () => {
-    expect(resolveTarget({}, {}).agent).toBe("claude");
+  it("falls back to the default backend when nothing names one", () => {
+    expect(resolveTarget({}, {}).agent).toBe(DEFAULT_AGENT);
   });
 });
 

@@ -7,7 +7,7 @@
 **Visual editor for your codebase.**
 
 Airship puts an infinite design canvas in front of your dev server. Select an element, describe
-the change, and watch Claude Code, Codex, OpenCode, pi or DeepSeek Harness update the source —
+the change, and watch DeepSeek Harness, Claude Code, Codex, OpenCode or pi update the source —
 without rebuilding your UI in a separate design tool.
 
 ![Airship mid-edit: the prompt "Turn this into a github icon" streaming its reads, writes and edits, a desktop and an iPhone frame side by side on the canvas, and the Edit inspector open on the selection](media/inspector-edit.png)
@@ -178,18 +178,18 @@ is the box model, the rules that are actually hitting the element, and your own 
 Pick one with `--agent`, or switch between them as you go. They are not equal, and Airship tells
 you what you're giving up at startup.
 
-| | `claude` (default) | `codex` | `opencode` | `pi` | `dsh` |
+| | `dsh` (default) | `claude` | `codex` | `opencode` | `pi` |
 | --- | --- | --- | --- | --- | --- |
-| Watch it write | word by word | the whole reply at once, at the end | word by word | word by word | word by word |
+| Watch it write | word by word | word by word | the whole reply at once, at the end | word by word | word by word |
 | Pick up an old chat | yes | yes | yes | yes | yes |
-| Branch off a chat | yes | starts fresh, and says so | yes, history kept | yes, history kept | starts fresh, and says so |
-| Shows what it cost | in dollars | tokens only | in dollars | in dollars when its catalogue prices the model | tokens only, as context occupancy |
-| `--effort` | yes | yes | **ignored** | yes, as pi's thinking level | yes, on the model's own ladder |
-| `--max-turns`, `--max-budget` | yes | **ignored** | **ignored** | **ignored** | **ignored** |
-| `--model` | a model name | a model name | needs the `provider/model` form | needs pi's `provider/model` form | a bare model id |
-| Lists its own models | yes | **no** — Airship ships a list | yes, the ones you are signed in to | yes, from its `models.json` and logins | **no** — Airship ships a list |
-| `--safe` | checks each edit and command | **real sandbox** | asks before each edit and command | **narrows the toolset only** | **best-effort only** — see below |
-| Install | included | included | **you install it yourself** | **you install it yourself** | **you install it yourself** |
+| Branch off a chat | starts fresh, and says so | yes | starts fresh, and says so | yes, history kept | yes, history kept |
+| Shows what it cost | tokens only, as context occupancy | in dollars | tokens only | in dollars | in dollars when its catalogue prices the model |
+| `--effort` | yes, on the model's own ladder | yes | yes | **ignored** | yes, as pi's thinking level |
+| `--max-turns`, `--max-budget` | **ignored** | yes | **ignored** | **ignored** | **ignored** |
+| `--model` | a bare model id | a model name | a model name | needs the `provider/model` form | needs pi's `provider/model` form |
+| Lists its own models | **no** — Airship ships a list | yes | **no** — Airship ships a list | yes, the ones you are signed in to | yes, from its `models.json` and logins |
+| `--safe` | **best-effort only** — see below | checks each edit and command | **real sandbox** | asks before each edit and command | **narrows the toolset only** |
+| Install | **you install it yourself** | included | included | **you install it yourself** | **you install it yourself** |
 
 `dsh` talks to DeepSeek Harness over ACP, the Agent Client Protocol. Three things about it are
 worth knowing before you pick it: it cannot accept a screenshot, it has no sandbox, and it cannot
