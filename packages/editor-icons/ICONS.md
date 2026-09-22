@@ -451,6 +451,8 @@ icons:
   claude: local/claude.svg
   codex: local/codex.svg
   opencode: local/opencode.svg
+  pi: local/pi.svg
+  dsh: local/dsh.svg
 
 ---
 
@@ -672,6 +674,14 @@ conventions with nothing reconciling them.
   picker. Unlike the rest these are not ours to redraw; they name a backend in
   the UI. Path data from `@lobehub/icons-static-svg`; the marks remain the
   trademarks of Anthropic, OpenAI and the opencode project respectively.
+- **`pi`** — a plain π glyph standing in for the pi coding agent, which has no
+  published mark. Drawn here, filled, within the same 12.8-unit box.
+- **`dsh`** — a DSH wordmark for the DeepSeek Harness backend, which has no
+  published mark either. Three letters on one filled path, cut heavy and wide:
+  the picker draws this mark at `xs` in the menu and `sm` on the button, where
+  the counters are gone and only the silhouette is left. The S is the only one
+  with rounded corners and the D the only one with a bowl, which is what keeps
+  the three apart at that size.
 
 ## Sizing
 

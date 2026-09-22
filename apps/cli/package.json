@@ -1,14 +1,16 @@
 {
   "name": "@airshiplabs/cli",
   "version": "0.3.0",
-  "description": "Airship — a visual editor for your running web app, driven by Claude Code, Codex or OpenCode",
+  "description": "Airship — a visual editor for your running web app, driven by Claude Code, Codex, OpenCode, pi or the DeepSeek Harness",
   "keywords": [
     "ai",
     "claude",
     "codex",
+    "deepseek",
     "developer-tools",
     "editor",
     "opencode",
+    "pi",
     "visual-editing"
   ],
   "homepage": "https://github.com/0xnyn/airship#readme",

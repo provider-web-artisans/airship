@@ -19,7 +19,12 @@ import {
   GLOBAL_FLAGS,
   requirePort,
 } from "../lib/args";
-import { asBoolean, asString, CONFIG_FILENAME } from "../lib/config";
+import {
+  asBoolean,
+  asString,
+  CONFIG_FILENAME,
+  type Settings,
+} from "../lib/config";
 import { detectTarget, isListening } from "../lib/detect";
 import { resolveSettings } from "../lib/settings";
 import {
@@ -35,6 +40,14 @@ export const DOCTOR_FLAGS: readonly string[] = [
   "cwd",
   "target",
   "agent",
+  // The per-backend locations `init` and `serve` accept, and which `doctor`
+  // therefore has to accept too — a backend that is not on PATH is the case
+  // this command exists for, and refusing the flag that points at it turns
+  // "check my setup" into "your setup is wrong".
+  "dsh-path",
+  "dsh-agent-dir",
+  "pi-path",
+  "pi-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -77,10 +90,18 @@ function checkNode(): Check {
   };
 }
 
-async function checkAgents(preferred: AgentKind | undefined): Promise<Check[]> {
+async function checkAgents(
+  preferred: AgentKind | undefined,
+  binaries: ReadonlyMap<AgentKind, string>
+): Promise<Check[]> {
   const results = await Promise.all(
     AGENTS.map(async (agent) => {
-      const auth = await checkAuth(agent as AgentKind);
+      // A binary named on the command line is where that backend is, so it
+      // answers for the agent instead of the PATH probe. See `backendLocations`.
+      const named = binaries.get(agent as AgentKind);
+      const auth = named
+        ? { ok: existsSync(named), reason: `No file at ${named}.` }
+        : await checkAuth(agent as AgentKind);
       // Only the agent actually being used is a failure; the other two not
       // being installed is the normal state and must not read as broken.
       const isPreferred = agent === (preferred ?? "claude");
@@ -88,15 +109,118 @@ async function checkAgents(preferred: AgentKind | undefined): Promise<Check[]> {
       if (!auth.ok) {
         level = isPreferred ? "fail" : "warn";
       }
+      let value = "not available";
+      if (auth.ok) {
+        value = named ? `ready (${named})` : "ready";
+      }
       return {
         hint: auth.ok ? undefined : auth.reason,
         label: `agent ${agent}`,
         level,
-        value: auth.ok ? "ready" : "not available",
+        value,
       } satisfies Check;
     })
   );
   return results;
+}
+
+/** A per-backend location flag, and the row it gets when it is set. */
+interface BackendLocation {
+  agent: AgentKind;
+  /** `--<flag>` naming the backend's home/config directory. */
+  dir?: { flag: string; label: string };
+  /** `--<flag>` naming the backend's binary. */
+  path?: { flag: string; label: string };
+}
+
+const BACKEND_LOCATIONS: readonly BackendLocation[] = [
+  {
+    agent: "dsh",
+    dir: { flag: "dsh-agent-dir", label: "dsh home" },
+    path: { flag: "dsh-path", label: "dsh binary" },
+  },
+  {
+    agent: "pi",
+    dir: { flag: "pi-agent-dir", label: "pi config" },
+    path: { flag: "pi-path", label: "pi binary" },
+  },
+];
+
+/** The row for a `--<agent>-path`, or null when the flag was not given. */
+function binaryRow(
+  agent: AgentKind,
+  flag: string,
+  label: string,
+  binary: string | undefined,
+  preferred: AgentKind | undefined
+): Check | null {
+  if (!binary) {
+    return null;
+  }
+  const found = existsSync(binary);
+  // Same rule as the agent rows: only the backend in use can fail the run.
+  const blocked: Level = agent === (preferred ?? "claude") ? "fail" : "warn";
+  return {
+    hint: found
+      ? undefined
+      : `No file at ${binary} — check --${flag}, or unset it to search PATH.`,
+    label,
+    level: found ? "ok" : blocked,
+    value: binary,
+  };
+}
+
+/** The row for a `--<agent>-dir`, or null when the flag was not given. */
+function homeRow(label: string, home: string | undefined): Check | null {
+  if (!home) {
+    return null;
+  }
+  const found = existsSync(home);
+  return {
+    hint: found
+      ? undefined
+      : "Not there yet. The backend creates it on first run if the path is right.",
+    label,
+    level: found ? "ok" : "warn",
+    value: home,
+  };
+}
+
+/**
+ * Check the per-backend locations this command was given, and report the binary
+ * each one names back to `checkAgents`.
+ *
+ * `checkAuth()` takes no per-backend settings — a gap it shares with every
+ * backend, and one this file cannot close on its own — so a path given here is
+ * checked directly rather than accepted and ignored. Ignoring it would be the
+ * worst of the three available answers: the `agent <name>` row would report a
+ * PATH probe on a run the user had explicitly pointed at their own build, and
+ * the hint under it would tell them to pass the flag they had just passed.
+ */
+export function backendLocations(
+  settings: Settings,
+  preferred: AgentKind | undefined
+): { binaries: Map<AgentKind, string>; checks: Check[] } {
+  const binaries = new Map<AgentKind, string>();
+  const checks: Check[] = [];
+
+  for (const { agent, dir, path } of BACKEND_LOCATIONS) {
+    const binary = path ? asString(settings, path.flag) : undefined;
+    if (binary && path) {
+      binaries.set(agent, binary);
+    }
+    const rows = [
+      path ? binaryRow(agent, path.flag, path.label, binary, preferred) : null,
+      dir ? homeRow(dir.label, asString(settings, dir.flag)) : null,
+    ];
+    for (const row of rows) {
+      if (row) {
+        checks.push(row);
+      }
+    }
+  }
+
+  return { binaries, checks };
 }
 
 function checkOverlay(): Check {
@@ -271,6 +395,7 @@ export const doctor = defineCommand({
     setColorEnabled(shouldColor({ json }));
 
     const agent = asString(settings, "agent") as AgentKind | undefined;
+    const locations = backendLocations(settings, agent);
 
     const checks: Check[] = [
       checkNode(),
@@ -278,7 +403,8 @@ export const doctor = defineCommand({
       checkConfig(configSource),
       ...checkGit(cwd, agent),
       checkOverlay(),
-      ...(await checkAgents(agent)),
+      ...locations.checks,
+      ...(await checkAgents(agent, locations.binaries)),
       // The dev server last: it is the check most likely to be a transient
       // "not started yet", and it reads better after the things that stay true.
       await checkDevServer(cwd, asString(settings, "target")),

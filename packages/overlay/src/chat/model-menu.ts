@@ -44,6 +44,8 @@ const AGENT_META: { icon: IconName; kind: AgentKind; label: string }[] = [
   { icon: "claude", kind: "claude", label: "Claude" },
   { icon: "codex", kind: "codex", label: "Codex" },
   { icon: "opencode", kind: "opencode", label: "OpenCode" },
+  { icon: "pi", kind: "pi", label: "pi" },
+  { icon: "dsh", kind: "dsh", label: "DSH" },
 ];
 
 /** The label a picked model gets in the button's tooltip. */
@@ -155,9 +157,14 @@ export function customModelRow(
     "aria-label": `Model id for ${agent}`,
     class: cls("pop-custom-input"),
     // The form each backend takes, shown rather than explained: opencode drops
-    // an id it cannot attribute to a provider, and the placeholder is the
-    // cheapest place to say so.
-    placeholder: agent === "opencode" ? "provider/model" : "model id or alias",
+    // an id it cannot attribute to a provider, and pi names an endpoint as
+    // `provider/model` through its models.json. dsh is deliberately not in that
+    // branch — it carries the provider beside the model, so its ids are bare —
+    // and the generic wording is therefore the true one for it.
+    placeholder:
+      agent === "opencode" || agent === "pi"
+        ? "provider/model"
+        : "model id or alias",
     spellcheck: "false",
     type: "text",
   }) as HTMLInputElement;

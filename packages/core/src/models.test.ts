@@ -13,12 +13,15 @@
  * rejection.
  */
 
+import { AGENT_KINDS } from "@airship/protocol";
+import { SEED_MODELS } from "@airship/protocol/models";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAdapter } from "./agent";
 import {
   fromClaudeModels,
   fromOpencodeProviders,
   listAllModels,
+  listModels,
 } from "./models";
 
 vi.mock("./agent", () => ({ getAdapter: vi.fn() }));
@@ -131,6 +134,34 @@ describe("fromOpencodeProviders", () => {
 });
 
 /*
+ * dsh publishes its catalogue only inside a session: `session/new` answers with
+ * a `model` config option, and creating that session persists a record under
+ * `$DSH_HOME`. The route is deliberately not taken, so this pins the branch —
+ * an authenticated dsh comes back from the seed, with a note explaining why,
+ * and without starting anything.
+ */
+describe("listModels — dsh", () => {
+  const mockGetAdapter = vi.mocked(getAdapter);
+
+  beforeEach(() => {
+    mockGetAdapter.mockReset();
+  });
+
+  it("serves dsh from the seed rather than opening a session", async () => {
+    mockGetAdapter.mockResolvedValue({
+      checkAuth: () => ({ ok: true }),
+    } as unknown as Awaited<ReturnType<typeof getAdapter>>);
+
+    const group = await listModels("dsh", "/tmp");
+
+    expect(group.models.map((m) => m.id)).toEqual(
+      SEED_MODELS.dsh.map((m) => m.id)
+    );
+    expect(group.note).toContain("session");
+  });
+});
+
+/*
  * The one thing this module promises: it does not throw.
  *
  * `getAdapter` is a dynamic import, so a backend whose package is missing or
@@ -151,7 +182,7 @@ describe("listAllModels", () => {
 
     const groups = await listAllModels("/tmp");
 
-    expect(groups).toHaveLength(3);
+    expect(groups).toHaveLength(AGENT_KINDS.length);
     for (const group of groups) {
       expect(group.note).toBe("Cannot find module 'codex'");
       // A degraded menu still has to be a menu.

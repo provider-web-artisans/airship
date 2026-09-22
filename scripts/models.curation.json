@@ -44,5 +44,28 @@
     "`claude --model` accepts these aliases and resolves each to the current",
     "model in its family, so they stay correct between refreshes in a way a",
     "pinned id cannot. `codex -m` and opencode take no aliases, so they get none."
+  ],
+
+  "hand": {
+    "pi": [
+      {
+        "hint": "1M",
+        "id": "anthropic/claude-sonnet-5",
+        "label": "Claude Sonnet 5"
+      },
+      { "hint": "1.1M", "id": "openai/gpt-5.5", "label": "GPT-5.5" }
+    ],
+    "dsh": [
+      { "hint": "1M", "id": "deepseek-v4-flash", "label": "DeepSeek-V4-Flash" },
+      { "hint": "1M", "id": "deepseek-v4-pro", "label": "DeepSeek-V4-Pro" }
+    ]
+  },
+  "$hand": [
+    "Harnesses models.dev does not describe, so there is nothing to derive from.",
+    "pi enumerates its own catalogue at runtime (`pi --list-models`), and its rows",
+    "here only cover a probe that fails. dsh reports its catalogue only inside an",
+    "ACP session, which airship does not open just to paint a picker. Emitted",
+    "verbatim, after the generated groups, in this order — keep ids in the form",
+    "each harness's --model wants: pi takes `provider/model`, dsh a bare id."
   ]
 }

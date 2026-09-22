@@ -31,7 +31,13 @@ export type {
 // ---------------------------------------------------------------------------
 
 /** Which coding agent drives an edit. */
-export const AGENT_KINDS = ["claude", "codex", "opencode"] as const;
+export const AGENT_KINDS = [
+  "claude",
+  "codex",
+  "opencode",
+  "pi",
+  "dsh",
+] as const;
 export const AgentKindSchema = z.enum(AGENT_KINDS);
 export type AgentKind = z.infer<typeof AgentKindSchema>;
 

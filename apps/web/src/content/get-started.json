@@ -1,7 +1,7 @@
 {
   "heading": "Get started",
   "desc": "Airship runs alongside your project without adding anything to the codebase.",
-  "compat": "Airship uses the authentication you already have configured for Claude Code, Codex, or OpenCode",
+  "compat": "Airship uses the authentication you already have configured for Claude Code, Codex, OpenCode, pi or DeepSeek Harness",
   "steps": [
     {
       "id": "run-your-app",

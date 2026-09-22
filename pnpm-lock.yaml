@@ -157,6 +157,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@agentclientprotocol/sdk':
+        specifier: 1.4.0
+        version: 1.4.0(zod@4.4.3)
       '@airship/git':
         specifier: workspace:*
         version: link:../git
@@ -352,6 +355,11 @@ packages:
 
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
+
+  '@agentclientprotocol/sdk@1.4.0':
+    resolution: {integrity: sha512-/eufudw+aFY1LKLolT6yFE6UMmYRl7fMJ/DEONSIyR6wI3slHWITBsANRGqXEY8FRzqUxwh7QEaGiZHcJPVThg==}
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
 
   '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.232':
     resolution: {integrity: sha512-+/4PX+dwmQAjlOlooocwa3kClulZfMo133xQH3LYDlK7D5bzze16lwlDGPVAYGEarpvXg7G5JK8QjfWAJ2HYbg==}
@@ -4432,6 +4440,10 @@ packages:
 snapshots:
 
   '@adobe/css-tools@4.5.0': {}
+
+  '@agentclientprotocol/sdk@1.4.0(zod@4.4.3)':
+    dependencies:
+      zod: 4.4.3
 
   '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.232':
     optional: true

@@ -1,14 +1,19 @@
 // Generates packages/protocol/src/models.ts — the seed model catalogue — from
 // the models.dev registry.
 //
-// Why a seed exists at all: of the three harnesses, only two can enumerate
-// their own models. Claude answers `query.supportedModels()` and OpenCode
-// answers `client.config.providers()`, both live and both scoped to what the
-// user is actually authenticated for. **Codex can enumerate nothing** — no CLI
+// Why a seed exists at all: of the five harnesses, three can enumerate their own
+// models. Claude answers `query.supportedModels()`, OpenCode answers
+// `client.config.providers()` and pi answers `pi --list-models`, all live and
+// scoped to what the user actually has. **Codex can enumerate nothing** — no CLI
 // subcommand, no app-server RPC, no config file to read. Without this its list
 // would be a constant somebody has to remember to edit on every OpenAI release,
 // and the failure mode of forgetting is silent: the picker just stops offering
 // the model you wanted.
+//
+// pi and dsh are the other case: models.dev does not describe them, so there is
+// nothing to derive and their rows are carried verbatim from the `hand` block in
+// the curation file. dsh could enumerate, but only by opening an ACP session —
+// which persists a session on disk — so its list is hand-maintained too.
 //
 // The seed also does two smaller jobs. It is what the menu paints *before* the
 // live probe returns, so opening the picker is never a wait; and it is what the
@@ -46,6 +51,15 @@ const SOURCE = "https://models.dev/models.json";
 
 /** models.dev id prefix → the harness whose group the model belongs in. */
 const HARNESS = { "anthropic/": "claude", "openai/": "codex" };
+
+/**
+ * Harnesses carried verbatim from `hand` in the curation file.
+ *
+ * Named here rather than taken from the file's own keys: the emitted order is
+ * part of the output, and a typo'd key in the curation file would otherwise
+ * disappear silently instead of failing the run.
+ */
+const HAND_HARNESSES = ["pi", "dsh"];
 
 /**
  * `.bin/biome` is the POSIX shell wrapper, which Windows cannot execute. pnpm
@@ -168,7 +182,7 @@ function candidates(models, curation) {
  * first paint, and the live probe replaces it wholesale.
  */
 function group(all, curation) {
-  const seeded = { claude: [], codex: [], opencode: [] };
+  const seeded = { claude: [], codex: [], dsh: [], opencode: [], pi: [] };
   for (const harness of ["claude", "codex"]) {
     const extra = curation.extra?.[harness] ?? [];
     const derived = all
@@ -180,8 +194,41 @@ function group(all, curation) {
   seeded.opencode = all
     .slice(0, curation.limit)
     .map((m) => ({ hint: m.hint, id: m.id, label: m.label }));
+  for (const harness of HAND_HARNESSES) {
+    seeded[harness] = (curation.hand?.[harness] ?? []).map((m) => ({
+      hint: m.hint,
+      id: m.id,
+      label: m.label,
+    }));
+  }
+  for (const key of Object.keys(curation.hand ?? {})) {
+    if (!HAND_HARNESSES.includes(key)) {
+      die(
+        `models.curation.json: hand group "${key}" is not one of ${HAND_HARNESSES.join(", ")}`
+      );
+    }
+  }
   return seeded;
 }
+
+/**
+ * Prose printed above each hand-maintained group.
+ *
+ * The rows are data and live in the curation file; the sentence that says why
+ * the group is not derived belongs with the template, next to the header whose
+ * count it explains.
+ */
+const HAND_NOTES = {
+  dsh: `  // dsh is not on models.dev, and it has no \`--list-models\`: its catalogue
+  // exists only inside an ACP session, where \`session/new\` answers with a
+  // \`model\` config option. Airship does not open one of those just to paint the
+  // picker — it is persisted under $DSH_HOME and outlives the read — so this
+  // block is hand-maintained. The ids are bare: dsh carries the provider
+  // beside the model, never inside the id.`,
+  pi: `  // pi enumerates its own catalogue at runtime (\`pi --list-models\`); this
+  // seed only covers the case where that probe fails. Hand-maintained: pi is
+  // not on models.dev, so \`make models:refresh\` leaves this block alone.`,
+};
 
 function render(seeded, count) {
   const rows = (models) =>
@@ -191,10 +238,15 @@ function render(seeded, count) {
         return `    {${hint} id: ${JSON.stringify(m.id)}, label: ${JSON.stringify(m.label)} },`;
       })
       .join("\n");
+  const hand = HAND_HARNESSES.map(
+    (harness) =>
+      `\n${HAND_NOTES[harness]}\n  ${harness}: [\n${rows(seeded[harness])}\n  ],`
+  ).join("");
 
   return `// AUTO-GENERATED from ${SOURCE} by scripts/gen-models.mjs.
 // Do not edit by hand — edit scripts/models.curation.json and run
-// \`make models:refresh\`. ${count} models across three harnesses.
+// \`make models:refresh\`. ${count} models across five harnesses: the three models.dev
+// vendors are generated, and the pi and dsh groups are hand-maintained.
 
 /**
  * The model list the picker paints before anything has been asked, and falls
@@ -231,7 +283,10 @@ export interface SeedModel {
  * barrel for no gain — \`models.test.ts\` asserts these keys against
  * \`AGENT_KINDS\` instead, which catches the drift the import would have.
  */
-export const SEED_MODELS: Record<"claude" | "codex" | "opencode", SeedModel[]> =
+export const SEED_MODELS: Record<
+  "claude" | "codex" | "opencode" | "pi" | "dsh",
+  SeedModel[]
+> =
   {
   claude: [
 ${rows(seeded.claude)}
@@ -241,7 +296,7 @@ ${rows(seeded.codex)}
   ],
   opencode: [
 ${rows(seeded.opencode)}
-  ],
+  ],${hand}
 };
 `;
 }
@@ -298,7 +353,7 @@ async function main() {
 
   writeFileSync(OUT, next);
   process.stdout.write(
-    `wrote packages/protocol/src/models.ts — ${seeded.claude.length} claude, ${seeded.codex.length} codex, ${seeded.opencode.length} opencode\n`
+    `wrote packages/protocol/src/models.ts — ${seeded.claude.length} claude, ${seeded.codex.length} codex, ${seeded.opencode.length} opencode, ${seeded.pi.length} pi, ${seeded.dsh.length} dsh\n`
   );
 }
 

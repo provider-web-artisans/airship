@@ -28,7 +28,7 @@ import { VERSION } from "./lib/version";
 import { noTtyError, runWizard } from "./lib/wizard";
 
 const TAGLINE =
-  "airship — visual web-app editor powered by Claude Code, OpenAI Codex or OpenCode";
+  "airship — visual web-app editor powered by Claude Code, OpenAI Codex, OpenCode, pi or the DeepSeek Harness";
 
 const SUBCOMMANDS = {
   doctor: {
@@ -54,11 +54,11 @@ const SECTIONS = [
   {
     body: `By default the agent runs unsandboxed — it can write anywhere you can and reach the network. Pass --safe to confine edits to the project directory, cut network access, and screen destructive shell commands.
 
-Only codex confines writes at the OS level. On claude and opencode --safe screens edits by path and commands by pattern, which does not parse shell — a write redirected out of the project is not caught. Neither cuts raw network access, though both disable their built-in web tools.`,
+Only codex confines writes at the OS level. On claude and opencode --safe screens edits by path and commands by pattern, which does not parse shell — a write redirected out of the project is not caught. Neither cuts raw network access, though both disable their built-in web tools. On pi --safe only narrows its toolset. On dsh --safe is best-effort: airship hands the child DSH_PERMISSION_MODE=read-only, dsh's own settings can outrank it, and there is no edit or command screen either way.`,
     title: "Sandboxing",
   },
   {
-    body: "opencode is a separate install (`brew install sst/tap/opencode`); airship finds it on PATH. Its --model wants the `provider/model` form, and it has no reasoning-effort control, so --effort, --max-turns and --max-budget do not apply.",
+    body: "opencode is a separate install (`brew install sst/tap/opencode`); airship finds it on PATH. Its --model wants the `provider/model` form, and it has no reasoning-effort control, so --effort, --max-turns and --max-budget do not apply.\n\npi is a separate install too (`npm i -g @earendil-works/pi-coding-agent`). Its --model takes pi's `provider/model` form, including custom providers from models.json — point --pi-agent-dir at a config directory to ship one. --effort maps onto pi's thinking level; --max-turns and --max-budget do not apply, and --safe only narrows its toolset.\n\ndsh is the DeepSeek Harness, found on PATH or at --dsh-path. --dsh-model takes a bare model id (`deepseek-v4-flash`), not a provider/model ref, and --dsh-agent-dir points DSH_HOME at another profile tree; the picker offers airship's built-in list rather than asking dsh. --max-turns and --max-budget do not apply.",
     title: "Backends",
   },
   {

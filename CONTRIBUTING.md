@@ -216,8 +216,8 @@ lives on while catching nothing the PR gate would not.
 ## Architecture
 
 ```
-canvas shell ──ws──► proxy/server ──► @airship/core ──► claude │ codex │ opencode ──► edits your files
-  ├ frame 1440×900     (serve + route)   (adapter)          (agent backend)          (diff + undo)
+canvas shell ──ws──► proxy/server ──► @airship/core ──► claude │ codex │ opencode │ pi │ dsh ──► edits your files
+  ├ frame 1440×900     (serve + route)   (adapter)          (agent backend)                    (diff + undo)
   └ frame  393×852
     (live app, pick element)
 ```
@@ -307,6 +307,59 @@ the SDK's generated `Event` union omits `message.part.delta` entirely (237 of 31
 real turn), omits `server.heartbeat`, and declares a `permission.updated` the server does not
 emit in place of the `permission.asked` it does. Trusting it would drop streaming and deadlock
 every permission request while type-checking cleanly.
+
+### dsh
+
+`dsh` (DeepSeek Harness) is driven through `dsh --profile acp` — a **JSON-RPC server** on stdio
+speaking [ACP](https://agentclientprotocol.com), the Agent Client Protocol. It is the only
+surface worth using: the CLI's own `headless` profile has no `--json` and no `--session-id`, so a
+harness that wants events and resumable sessions has to speak ACP.
+
+The transport is the official `@agentclientprotocol/sdk` client, which owns framing, request ids
+and schema validation. That choice has one cost worth knowing: an update variant the pinned SDK
+does not describe is logged and dropped rather than passed through, so a dsh that starts emitting
+a new `sessionUpdate` kind loses that update until the SDK is bumped. The reducer
+(`providers/dsh-acp.ts`, `newAcpState`/`reduceAcpUpdate` in `dsh.ts`) stays pure over plain
+objects, so it is tested against hand-written frames copied from a real turn.
+
+| | OpenCode | dsh |
+| --- | --- | --- |
+| Transport | HTTP + SSE from `opencode serve` | JSON-RPC over the child's stdio |
+| Text streaming | token-level | token-level, per message id |
+| System prompt | a real `system` field | rides on the first turn's text (no ACP option) |
+| Resume | `session.fork` / revert | `session/resume`, cross-process; **no fork** |
+| Cancel | prompt abort | `session/cancel` notification, settles in ~20 ms |
+| Cost | real cost per message | none — one context-occupancy number |
+| Reasoning effort | **none** | `reasoning_effort`, snapped to the model's own ladder |
+| Model selection | `{providerID, modelID}` | `session/set_config_option`, `configId: "model"` |
+
+Gaps and wire quirks, handled explicitly rather than faked:
+
+- **`configId`, not `configOptionId`.** dsh 0.1.5 names the parameter `configId` while the pinned
+  SDK types it `configOptionId`, and the agent answers `-32602` for the spelling it does not
+  know. Outbound params are not schema-validated, so that one request goes through the untyped
+  overload.
+- **A bare model id is not a value.** `session/set_config_option` rejects one (`unknown model
+  option`); the options are JSON-encoded `["provider","model"]` arrays. `--dsh-model` resolves an
+  encoded array verbatim, `provider/id` into the pair, and a bare id by its last element — a miss
+  is an error, never a quiet run on the default.
+- **No images.** The agent advertises `promptCapabilities.image: false` and refuses an inline
+  image. The capability is read from `initialize`, and a run carrying one fails with that reason
+  rather than dropping the screenshot.
+- **No system-prompt option**, so the preamble rides on the first turn exactly as it does for
+  Codex, and is skipped on resume.
+- **No usage split and no cost.** `usage_update` carries one number — the tokens resident in the
+  session's context — and that is what `inputTokens` reports. Nothing invents an output count.
+- **`--safe` is best-effort and can lose.** Airship exports `DSH_PERMISSION_MODE=read-only`, but
+  the child's own `$DSH_HOME/settings.yaml` may set `permission.defaultPreset` and outrank it. An
+  isolated `--dsh-agent-dir` is what makes it hold, and nothing verifies the outcome afterwards.
+- **Listing models costs a session.** The catalogue is reachable only through `session/new`, and
+  that persists a session under `$DSH_HOME/sessions/` which `session/close` does not remove. The
+  model picker therefore paints the hand-maintained seed in `@airship/protocol/models` instead of
+  writing to the user's dsh history every time it opens.
+- **bash rows keep the exit code.** dsh reports a non-zero exit as a *completed* call with
+  `[exit code: N]` appended to the result text; the adapter strips the marker into
+  `typed.exitCode` and leaves `isError` false, as Codex and pi do.
 
 ## The site
 

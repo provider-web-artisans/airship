@@ -31,7 +31,9 @@ import { failureText, getAdapter } from "./agent";
 import { DiffCapture } from "./diff-capture";
 import { buildEditPrompt } from "./prompt";
 import type { CodexSettings } from "./providers/codex";
+import type { DshSettings } from "./providers/dsh";
 import type { OpencodeSettings } from "./providers/opencode-server";
+import type { PiSettings } from "./providers/pi";
 import { TimelineRecorder } from "./timeline";
 
 export interface RunEditInput {
@@ -45,6 +47,8 @@ export interface RunEditInput {
   /** Review feedback on a previous turn's diff. */
   comments?: ReviewComment[];
   cwd: string;
+  /** dsh-only passthrough knobs (`--dsh-path`, `--dsh-agent-dir`). */
+  dsh?: DshSettings;
   effort?: Effort;
   element?: ElementContext;
   /** Fork the resumed session instead of continuing it. */
@@ -59,6 +63,8 @@ export interface RunEditInput {
   moveChanges?: MoveEdit[];
   /** OpenCode-only passthrough knobs (`--opencode-path`, `--opencode-url`, …). */
   opencode?: OpencodeSettings;
+  /** pi-only passthrough knobs (`--pi-path`, `--pi-agent-dir`). */
+  pi?: PiSettings;
   prompt: string;
   /** Resume this agent session (multi-turn refinement). */
   resumeSessionId?: string | null;

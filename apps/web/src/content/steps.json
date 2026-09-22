@@ -12,7 +12,7 @@
       "id": "source",
       "figure": "source",
       "title": "Bring your coding agent into the canvas.",
-      "body": "Use Claude Code, Codex, or OpenCode directly from Airship. Select an element, describe the change, and get the resulting code diff without switching between tools."
+      "body": "Use Claude Code, Codex, OpenCode, pi or DeepSeek Harness directly from Airship. Select an element, describe the change, and get the resulting code diff without switching between tools."
     }
   ]
 }

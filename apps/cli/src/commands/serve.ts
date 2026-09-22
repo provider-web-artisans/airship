@@ -12,8 +12,10 @@ import {
   type AirshipSurface,
   type CodexSettings,
   checkAuth,
+  type DshSettings,
   type Effort,
   type OpencodeSettings,
+  type PiSettings,
   startServer,
 } from "@airship/server";
 import { defineCommand } from "citty";
@@ -68,6 +70,12 @@ export const SERVE_FLAGS: readonly string[] = [
   "opencode-url",
   "opencode-agent",
   "opencode-config",
+  "pi-model",
+  "pi-path",
+  "pi-agent-dir",
+  "dsh-model",
+  "dsh-path",
+  "dsh-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -77,6 +85,7 @@ export interface ServeOptions {
   autoCommit: boolean;
   codex: CodexSettings;
   cwd: string;
+  dsh: DshSettings;
   effort?: Effort;
   exec?: string;
   host?: string;
@@ -89,6 +98,7 @@ export interface ServeOptions {
   models: Partial<Record<AgentKind, string>>;
   open: boolean;
   opencode: OpencodeSettings;
+  pi: PiSettings;
   port?: number;
   quiet: boolean;
   safe: boolean;
@@ -132,6 +142,10 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
       config: Object.keys(codexConfig).length > 0 ? codexConfig : undefined,
     } satisfies CodexSettings,
     cwd,
+    dsh: {
+      agentDir: asString(settings, "dsh-agent-dir"),
+      dshPath: asString(settings, "dsh-path"),
+    } satisfies DshSettings,
     effort: effort ? (requireEnum(effort, "effort") as Effort) : undefined,
     exec: asString(settings, "exec"),
     host: host ? requireHost(host, "host") : undefined,
@@ -143,13 +157,15 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
     // The fallback collapses here rather than in the server so there is one
     // place that decides it, and one place the tests have to cover. Only the
     // opencode entry is validated: that flag names its backend, so a bare id
-    // is unambiguously wrong. `model` reaches all three and cannot be.
+    // is unambiguously wrong. `model` reaches every backend and cannot be.
     models: {
       claude: asString(settings, "claude-model") ?? model,
       codex: asString(settings, "codex-model") ?? model,
+      dsh: asString(settings, "dsh-model") ?? model,
       opencode: opencodeModel
         ? requireModelRef(opencodeModel, "opencode-model")
         : model,
+      pi: asString(settings, "pi-model") ?? model,
     },
     open: asBoolean(settings, "open"),
     opencode: {
@@ -158,6 +174,10 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
       opencodePath: asString(settings, "opencode-path"),
       url: asString(settings, "opencode-url"),
     } satisfies OpencodeSettings,
+    pi: {
+      agentDir: asString(settings, "pi-agent-dir"),
+      piPath: asString(settings, "pi-path"),
+    } satisfies PiSettings,
     port: port ? requirePort(port, "port") : undefined,
     quiet: asBoolean(settings, "quiet"),
     safe: asBoolean(settings, "safe"),
@@ -331,6 +351,7 @@ export const serve = defineCommand({
         autoCommit: opts.autoCommit,
         codex: opts.codex,
         cwd: opts.cwd,
+        dsh: opts.dsh,
         effort: opts.effort,
         host: opts.host,
         keepCsp: opts.keepCsp,
@@ -339,6 +360,7 @@ export const serve = defineCommand({
         model: opts.model,
         models: opts.models,
         opencode: opts.opencode,
+        pi: opts.pi,
         port,
         safe: opts.safe,
         surface: opts.surface,

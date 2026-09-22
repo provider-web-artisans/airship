@@ -93,6 +93,18 @@ describe("restoreModelPick — untrusted input", () => {
     expect(restoreModelPick().models).toEqual({});
   });
 
+  it("restores the newest backend like any other", () => {
+    // The kind list is hand-kept in the picker's order; a backend missing from
+    // it would silently forget the model the user picked for it.
+    stored(
+      JSON.stringify({ agent: "dsh", models: { dsh: "deepseek-v4-pro" } })
+    );
+    expect(restoreModelPick()).toEqual({
+      agent: "dsh",
+      models: { dsh: "deepseek-v4-pro" },
+    });
+  });
+
   it("drops a model that is not a non-empty string", () => {
     stored(
       JSON.stringify({ models: { claude: 5, codex: "", opencode: "a/b" } })

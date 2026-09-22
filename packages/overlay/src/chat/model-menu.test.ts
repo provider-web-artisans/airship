@@ -1,5 +1,5 @@
 /**
- * The picker's content: three harness groups, and the typed-id escape hatch.
+ * The picker's content: one group per harness, and the typed-id escape hatch.
  *
  * `modelGroups` returns data rather than DOM, which is what makes most of this
  * testable without a menu to put it in — the same reason `deviceGroups` is
@@ -7,7 +7,7 @@
  * element, so its tests drive the real one.
  */
 
-import type { ModelCatalogue } from "@airship/protocol";
+import type { AgentKind, ModelCatalogue } from "@airship/protocol";
 import { describe, expect, it, vi } from "vitest";
 import type { MenuItem } from "../popover-host";
 import { customModelRow, modelGroups, modelLabel } from "./model-menu";
@@ -44,7 +44,13 @@ function labels(items: MenuItem[]): string[] {
 describe("modelGroups", () => {
   it("offers every harness, in picker order", () => {
     const { groups } = groupsFor("claude");
-    expect(groups.map((g) => g.group)).toEqual(["claude", "codex", "opencode"]);
+    expect(groups.map((g) => g.group)).toEqual([
+      "claude",
+      "codex",
+      "opencode",
+      "pi",
+      "dsh",
+    ]);
   });
 
   it("opens the group for the backend the composer is on", () => {
@@ -110,7 +116,7 @@ describe("modelGroups", () => {
   it("keeps a failing backend in the list", () => {
     // Switching *to* a backend you have not signed into yet is a thing the
     // picker has to allow, so a group never disappears on a failed probe.
-    expect(groupsFor("claude").groups).toHaveLength(3);
+    expect(groupsFor("claude").groups).toHaveLength(5);
   });
 
   it("picks the backend and the model together", () => {
@@ -131,6 +137,8 @@ describe("modelGroups", () => {
       "claude",
       "codex",
       "opencode",
+      "pi",
+      "dsh",
     ]);
   });
 });
@@ -154,7 +162,7 @@ describe("modelLabel", () => {
 });
 
 describe("customModelRow", () => {
-  function row(agent: "claude" | "opencode" = "claude") {
+  function row(agent: AgentKind = "claude") {
     const apply = vi.fn();
     const close = vi.fn();
     const node = customModelRow(agent, apply, close);
@@ -216,8 +224,18 @@ describe("customModelRow", () => {
     }
   });
 
-  it("shows opencode the form it needs", () => {
+  it("shows the provider-qualified backends the form they need", () => {
+    // opencode drops an id it cannot attribute to a provider, and pi resolves
+    // one through its own models.json.
     expect(row("opencode").input.placeholder).toBe("provider/model");
-    expect(row("claude").input.placeholder).not.toContain("/");
+    expect(row("pi").input.placeholder).toBe("provider/model");
+  });
+
+  it("leaves the bare-id backends on the generic placeholder", () => {
+    // dsh carries the provider beside the model rather than inside the id, so
+    // `provider/model` would be the wrong shape to show — as it is for claude,
+    // whose aliases are bare too.
+    expect(row("dsh").input.placeholder).toBe("model id or alias");
+    expect(row("claude").input.placeholder).toBe("model id or alias");
   });
 });

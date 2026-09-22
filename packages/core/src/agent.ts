@@ -104,6 +104,14 @@ export async function getAdapter(kind: AgentKind): Promise<AgentAdapter> {
       const { opencodeAdapter } = await import("./providers/opencode");
       return opencodeAdapter;
     }
+    case "pi": {
+      const { piAdapter } = await import("./providers/pi");
+      return piAdapter;
+    }
+    case "dsh": {
+      const { dshAdapter } = await import("./providers/dsh");
+      return dshAdapter;
+    }
     default: {
       const { claudeAdapter } = await import("./providers/claude");
       return claudeAdapter;

@@ -20,7 +20,7 @@ import net from "node:net";
 import type { ArgsDef } from "citty";
 import { CliError, didYouMean, EXIT } from "./errors";
 
-export const AGENTS = ["claude", "codex", "opencode"] as const;
+export const AGENTS = ["claude", "codex", "opencode", "pi", "dsh"] as const;
 export const EFFORTS = [
   "minimal",
   "low",
@@ -216,6 +216,22 @@ export const FLAGS: readonly FlagSpec[] = [
     type: "string",
   },
   {
+    defaultHint: "--model, then the agent's own",
+    group: "BACKEND",
+    help: "Model for the pi backend, in pi's own `provider/model` form.",
+    hint: "<provider/model>",
+    name: "pi-model",
+    type: "string",
+  },
+  {
+    defaultHint: "--model, then the agent's own",
+    group: "BACKEND",
+    help: "Model for the dsh backend, a bare id from its `model` config option.",
+    hint: "<id>",
+    name: "dsh-model",
+    type: "string",
+  },
+  {
     defaultHint: "bundled",
     group: "BACKEND",
     help: "Path to the `codex` binary.",
@@ -259,6 +275,38 @@ export const FLAGS: readonly FlagSpec[] = [
     help: "JSON file merged into the opencode server config.",
     hint: "<file>",
     name: "opencode-config",
+    type: "string",
+  },
+  {
+    defaultHint: "found on PATH",
+    group: "BACKEND",
+    help: "Path to the `pi` binary.",
+    hint: "<path>",
+    name: "pi-path",
+    type: "string",
+  },
+  {
+    defaultHint: "~/.pi/agent",
+    group: "BACKEND",
+    help: "pi config directory (PI_CODING_AGENT_DIR) holding models.json and settings.json.",
+    hint: "<dir>",
+    name: "pi-agent-dir",
+    type: "string",
+  },
+  {
+    defaultHint: "found on PATH",
+    group: "BACKEND",
+    help: "Path to the `dsh` binary.",
+    hint: "<path>",
+    name: "dsh-path",
+    type: "string",
+  },
+  {
+    defaultHint: "~/.dsh",
+    group: "BACKEND",
+    help: "dsh home (DSH_HOME) holding the profile it boots and its sessions.",
+    hint: "<dir>",
+    name: "dsh-agent-dir",
     type: "string",
   },
   {
@@ -468,7 +516,7 @@ export function requireEnum(value: string, name: string): string {
  * A hard error is right *here* and wrong for `--model`, and the difference is
  * which backend the flag is aimed at. This one names opencode, so a bare id can
  * only be a mistake. `--model` applies to whichever agent the picker lands on,
- * where a bare id is correct for two of the three, so that one keeps the launch
+ * where a bare id is correct for three of the five, so that one keeps the launch
  * warning in `banner.ts` instead.
  */
 export function requireModelRef(value: string, name: string): string {

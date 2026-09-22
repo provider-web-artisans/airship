@@ -2,10 +2,11 @@
  * The marks of the coding agents Airship drives.
  *
  * Copied verbatim from packages/editor-icons/assets/local/{claude,codex,
- * opencode}.svg. Same posture as `GLYPHS.logo`: inlined rather than loaded
- * through an <img> so they inherit `currentColor` and follow the text around
- * them without a second asset request. If those files change, these strings
- * change too.
+ * opencode,pi,dsh}.svg, with the generator's own `translate`/`scale` wrapper
+ * kept for the two local marks that need it. Same posture as `GLYPHS.logo`:
+ * inlined rather than loaded through an <img> so they inherit `currentColor`
+ * and follow the text around them without a second asset request. If those
+ * files change, these strings change too.
  *
  * Deliberately NOT in `editor-glyphs`. Everything there is a hand-drawn stand-in
  * for the hero's mock editor and is `aria-hidden`, because the mock is a pure
@@ -32,5 +33,13 @@ export const AGENT_MARKS: readonly AgentMark[] = [
   {
     body: '<path fill-rule="evenodd" d="M14.667 8H9.333v8h5.333V8zm2.667 10.667H6.667V5.333h10.667v13.333z" fill="currentColor" fill-opacity="0.9"/>',
     name: "OpenCode",
+  },
+  {
+    body: '<g transform="translate(0.692 0.259) scale(0.962)"><path d="M5.6 8.2c0-1.1.7-2 1.9-2.4.6-.2 1.4-.2 2.3-.2h8.6v2.2h-2.2v7.6c0 .8.4 1.2 1 1.2.4 0 .8-.2 1.2-.5v2.1c-.6.4-1.3.6-2.1.6-1.9 0-2.9-1.1-2.9-3.2V7.8h-3.3v3.5c0 3.1-.6 5.5-2.5 7.1H5.1c1.6-1.7 2.3-3.9 2.3-7V7.8c-.9 0-1.5.3-1.8.9V8.2z" fill="currentColor" fill-opacity="0.9"/></g>',
+    name: "pi",
+  },
+  {
+    body: '<g transform="translate(2.4 2.4) scale(0.8)"><path d="M4 7.1H6.3A2.3 2.3 0 0 1 8.6 9.4V14.6A2.3 2.3 0 0 1 6.3 16.9H4ZM5.6 8.7V15.3H6.3A0.7 0.7 0 0 0 7 12A0.7 0.7 0 0 0 6.3 8.7ZM14.3 7.1L11.85 7.1A2.15 2.15 0 0 0 9.7 9.25L9.7 10.65A2.15 2.15 0 0 0 11.85 12.8L12.15 12.8A0.55 0.55 0 0 1 12.7 13.35L12.7 14.75A0.55 0.55 0 0 1 12.15 15.3L9.7 15.3L9.7 16.9L12.15 16.9A2.15 2.15 0 0 0 14.3 14.75L14.3 13.35A2.15 2.15 0 0 0 12.15 11.2L11.85 11.2A0.55 0.55 0 0 1 11.3 10.65L11.3 9.25A0.55 0.55 0 0 1 11.85 8.7L14.3 8.7ZM15.4 7.1H17V16.9H15.4ZM18.4 7.1H20V16.9H18.4ZM15.4 11.2H20V12.8H15.4Z" fill="currentColor" fill-opacity="0.9"/></g>',
+    name: "DeepSeek Harness",
   },
 ];

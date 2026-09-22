@@ -22,6 +22,6 @@ export const SOFTWARE_JSON_LD = {
     priceCurrency: "USD",
   },
   operatingSystem: `macOS, Linux, Windows (Node ${NODE_VERSION}+)`,
-  softwareRequirements: `Node.js ${NODE_VERSION} or later, and one of Claude Code, OpenAI Codex or OpenCode`,
+  softwareRequirements: `Node.js ${NODE_VERSION} or later, and one of Claude Code, OpenAI Codex, OpenCode, pi or DeepSeek Harness`,
   url: SITE.origin,
 } as const;

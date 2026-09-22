@@ -21,6 +21,21 @@ export function safetyBanner(agent: AgentKind, safe: boolean): string {
   if (agent === "codex") {
     return `  ${style.green("Sandboxed:")} edits are confined to the project and the network is off.\n`;
   }
+  if (agent === "pi") {
+    return (
+      `  ${style.yellow("Narrowed:")} pi runs with its file and shell tools only. There is no OS\n` +
+      "    sandbox and no edit or command screen on this backend — the agent can\n" +
+      "    still write anywhere you can and reach the network.\n"
+    );
+  }
+  if (agent === "dsh") {
+    return (
+      `  ${style.yellow("Barely screened:")} airship hands dsh DSH_PERMISSION_MODE=read-only, and\n` +
+      "    dsh's own settings can outrank it — nothing verifies the result. There is\n" +
+      "    no OS sandbox, no edit or command screen, and the agent can still write\n" +
+      "    anywhere you can and reach the network.\n"
+    );
+  }
   // claude and opencode share the same guards, and neither cuts the socket.
   return (
     `  ${style.yellow("Screened:")} edits are confined to the project and destructive commands are\n` +
