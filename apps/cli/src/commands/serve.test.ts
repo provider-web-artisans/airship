@@ -8,6 +8,7 @@
  * and a precedence order, and which no other layer re-checks.
  */
 
+import { DEFAULT_AGENT } from "@airship/protocol";
 import { describe, expect, it } from "vitest";
 import { FLAGS } from "../lib/args";
 import { mergeSettings, type Settings } from "../lib/config";
@@ -114,7 +115,7 @@ describe("toServeOptions — models", () => {
 
 describe("toServeOptions — the surrounding validation still holds", () => {
   it("defaults the agent and rejects an unknown one", () => {
-    expect(optionsFor({}).agent).toBe("claude");
+    expect(optionsFor({}).agent).toBe(DEFAULT_AGENT);
     expect(errorFrom(() => optionsFor({ agent: "gemini" }))?.message).toContain(
       "agent"
     );
