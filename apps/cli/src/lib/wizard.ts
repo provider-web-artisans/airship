@@ -117,7 +117,7 @@ const MODEL_CUSTOM = "\u0000custom";
  * backend and the shape most of them take.
  */
 const MODEL_PLACEHOLDERS: Partial<Record<AgentKind, string>> = {
-  dsh: "deepseek-v4-flash",
+  dsh: "deepseek-flash",
   opencode: "anthropic/claude-sonnet-5",
 };
 

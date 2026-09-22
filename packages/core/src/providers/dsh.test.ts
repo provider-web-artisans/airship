@@ -87,7 +87,7 @@ const thinking = (items: TimelineItem[]): TimelineThinkingItem[] =>
 const CONFIG_OPTIONS = [
   {
     category: "model",
-    currentValue: '["deepseek-official","deepseek-v4-flash"]',
+    currentValue: '["deepseek-official","deepseek-flash"]',
     id: "model",
     name: "Model",
     options: [
@@ -96,8 +96,8 @@ const CONFIG_OPTIONS = [
         name: "DeepSeek",
         options: [
           {
-            name: "DeepSeek-V4-Flash",
-            value: '["deepseek-official","deepseek-v4-flash"]',
+            name: "DeepSeek-V41-Flash",
+            value: '["deepseek-official","deepseek-flash"]',
           },
           {
             name: "DeepSeek-V4-Pro",
@@ -425,7 +425,7 @@ describe("chooseEffortValue", () => {
 describe("acpChoices", () => {
   it("flattens the grouped model list and the flat effort list alike", () => {
     expect(acpChoices(CONFIG_OPTIONS[0]).map((c) => c.value)).toEqual([
-      '["deepseek-official","deepseek-v4-flash"]',
+      '["deepseek-official","deepseek-flash"]',
       '["deepseek-official","deepseek-v4-pro"]',
     ]);
     expect(acpChoices(CONFIG_OPTIONS[1]).map((c) => c.value)).toEqual([

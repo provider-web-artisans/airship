@@ -84,10 +84,13 @@ export const SEED_MODELS: Record<
   // picker — it is persisted under $DSH_HOME and outlives the read — so this
   // block is hand-maintained. The ids are bare: dsh carries the provider
   // beside the model, never inside the id.
-  dsh: [
-    { hint: "1M", id: "deepseek-v4-flash", label: "DeepSeek-V4-Flash" },
-    { hint: "1M", id: "deepseek-v4-pro", label: "DeepSeek-V4-Pro" },
-  ],
+  //
+  // The ids do not track the versions, which is a trap worth stating: the
+  // entry labelling itself 4.1 is `deepseek-flash`, while `deepseek-v4-flash`
+  // is the older V4-Flash. One row only: this picker is for the model Airship
+  // runs, and the other ids on the route are reached by naming them in
+  // `--dsh-model` or the picker's own free-text field.
+  dsh: [{ hint: "1M", id: "deepseek-flash", label: "DeepSeek-V41-Flash" }],
   opencode: [
     { hint: "1M", id: "anthropic/claude-opus-5", label: "Claude Opus 5" },
     { hint: "1.1M", id: "openai/gpt-5.6-luna", label: "GPT-5.6 Luna" },
