@@ -5,6 +5,7 @@
 import type { AddressInfo, Socket } from "node:net";
 import type {
   CodexSettings,
+  DshSettings,
   OpencodeSettings,
   PiSettings,
   RunEditResult,
@@ -61,6 +62,7 @@ import { createProxyServer } from "./proxy";
 export type {
   CodexConfigValue,
   CodexSettings,
+  DshSettings,
   ModelProbeOptions,
   OpencodeSettings,
   PiSettings,
@@ -87,6 +89,8 @@ export interface ServerOptions {
   codex?: CodexSettings;
   /** Project root for file edits. */
   cwd: string;
+  /** dsh-only passthrough knobs; opaque here by design. */
+  dsh?: DshSettings;
   effort?: Effort;
   /**
    * Interface the proxy *listens* on — not `targetHost`, the upstream dev
@@ -175,6 +179,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       catalogue = null;
     }
     catalogue ??= listAllModels(cwd, {
+      dsh: opts.dsh,
       opencode: opts.opencode,
       pi: opts.pi,
       safe: opts.safe,
@@ -386,6 +391,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         agent,
         codex: opts.codex,
         cwd,
+        dsh: opts.dsh,
         effort: opts.effort,
         fork: request.fork,
         images: request.images,
@@ -847,7 +853,7 @@ export function resolveTarget(
  *
  * - `--opencode-model` names its backend, so a bare id there can only be a
  *   mistake — a hard error at parse time.
- * - `--model` reaches all three backends, where a bare id is correct for two of
+ * - `--model` reaches every backend, where a bare id is correct for most of
  *   them. It warns at launch and the turn runs on opencode's own default.
  * - The picker's custom-model box had no guard at either end. It is the one door
  *   left, and the one where the user is choosing right now and can act on being

@@ -13,6 +13,7 @@ export { isPathInside, pathKey, toPosixPath } from "./paths";
 export type { EditPromptInput } from "./prompt";
 export { AIRSHIP_SYSTEM_PROMPT, buildEditPrompt, systemPrompt } from "./prompt";
 export type { CodexConfigValue, CodexSettings } from "./providers/codex";
+export type { DshSettings } from "./providers/dsh";
 /** Whether opencode can run a model id, so a caller can refuse one it cannot. */
 export { namesProvider } from "./providers/opencode-events";
 export type { OpencodeSettings } from "./providers/opencode-server";

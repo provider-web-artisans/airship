@@ -7,8 +7,8 @@
 **Visual editor for your codebase.**
 
 Airship puts an infinite design canvas in front of your dev server. Select an element, describe
-the change, and watch Claude Code, Codex or OpenCode update the source — without rebuilding your
-UI in a separate design tool.
+the change, and watch Claude Code, Codex, OpenCode, pi or DeepSeek Harness update the source —
+without rebuilding your UI in a separate design tool.
 
 ![Airship mid-edit: the prompt "Turn this into a github icon" streaming its reads, writes and edits, a desktop and an iPhone frame side by side on the canvas, and the Edit inspector open on the selection](media/inspector-edit.png)
 
@@ -178,22 +178,28 @@ is the box model, the rules that are actually hitting the element, and your own 
 Pick one with `--agent`, or switch between them as you go. They are not equal, and Airship tells
 you what you're giving up at startup.
 
-| | `claude` (default) | `codex` | `opencode` | `pi` |
-| --- | --- | --- | --- | --- |
-| Watch it write | word by word | the whole reply at once, at the end | word by word | word by word |
-| Pick up an old chat | yes | yes | yes | yes |
-| Branch off a chat | yes | starts fresh, and says so | yes, history kept | yes, history kept |
-| Shows what it cost | in dollars | tokens only | in dollars | in dollars when its catalogue prices the model |
-| `--effort` | yes | yes | **ignored** | yes, as pi's thinking level |
-| `--max-turns`, `--max-budget` | yes | **ignored** | **ignored** | **ignored** |
-| `--model` | a model name | a model name | needs the `provider/model` form | needs pi's `provider/model` form |
-| Lists its own models | yes | **no** — Airship ships a list | yes, the ones you are signed in to | yes, from its `models.json` and logins |
-| `--safe` | checks each edit and command | **real sandbox** | asks before each edit and command | **narrows the toolset only** |
-| Install | included | included | **you install it yourself** | **you install it yourself** |
+| | `claude` (default) | `codex` | `opencode` | `pi` | `dsh` |
+| --- | --- | --- | --- | --- | --- |
+| Watch it write | word by word | the whole reply at once, at the end | word by word | word by word | word by word |
+| Pick up an old chat | yes | yes | yes | yes | yes |
+| Branch off a chat | yes | starts fresh, and says so | yes, history kept | yes, history kept | starts fresh, and says so |
+| Shows what it cost | in dollars | tokens only | in dollars | in dollars when its catalogue prices the model | tokens only, as context occupancy |
+| `--effort` | yes | yes | **ignored** | yes, as pi's thinking level | yes, on the model's own ladder |
+| `--max-turns`, `--max-budget` | yes | **ignored** | **ignored** | **ignored** | **ignored** |
+| `--model` | a model name | a model name | needs the `provider/model` form | needs pi's `provider/model` form | a bare model id |
+| Lists its own models | yes | **no** — Airship ships a list | yes, the ones you are signed in to | yes, from its `models.json` and logins | **no** — Airship ships a list |
+| `--safe` | checks each edit and command | **real sandbox** | asks before each edit and command | **narrows the toolset only** | **best-effort only** — see below |
+| Install | included | included | **you install it yourself** | **you install it yourself** | **you install it yourself** |
+
+`dsh` talks to DeepSeek Harness over ACP, the Agent Client Protocol. Three things about it are
+worth knowing before you pick it: it cannot accept a screenshot, it has no sandbox, and it cannot
+fork a session. `--safe` exports `DSH_PERMISSION_MODE=read-only` to the child, but dsh's own
+settings can outrank that variable — an isolated `--dsh-agent-dir` is what makes it hold.
 
 Undo is Airship's, not the agent's. It keeps the previous version of every file it touches, so
-undo works on all four. One catch: `codex`, `opencode` and `pi` get that previous version from
-Git, so **undo needs your project to be a Git repo on those three**. Airship warns you at startup.
+undo works on all five. One catch: `codex`, `opencode`, `pi` and `dsh` get that previous version
+from Git, so **undo needs your project to be a Git repo on those four**. Airship warns you at
+startup.
 
 One more `opencode` quirk: the one-line summary and the follow-up suggestion chips come from a
 JSON block the model is asked to append to its reply. A model that ignores the instruction
@@ -211,6 +217,7 @@ Airship reuses whatever the chosen agent already has, and warns at startup if it
 | `codex` | `CODEX_API_KEY`, `OPENAI_API_KEY`, or a `codex login` (`~/.codex/auth.json`) |
 | `opencode` | the `opencode` binary on PATH, **plus** a provider key or an `opencode auth login` |
 | `pi` | the `pi` binary on PATH (`npm i -g @earendil-works/pi-coding-agent`), with a provider configured in its `models.json` or via `/login`; `--pi-agent-dir` points it at a shared config directory |
+| `dsh` | the `dsh` binary on PATH (`npm i -g @deepseek-ai/dsh`), with a key its own config already holds (`DEEPSEEK_API_KEY` or `~/.dsh/.credentials.yaml`); `--dsh-agent-dir` points Airship at an isolated `DSH_HOME` |
 
 OpenCode is a separate install — `brew install sst/tap/opencode` or `npm i -g opencode-ai` —
 and accepts `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENCODE_API_KEY`, `OPENROUTER_API_KEY`,
@@ -227,16 +234,23 @@ the same access it has when you run it from your terminal. Pass `--safe` to conf
 | `codex` | full access, network on | locked to your project folder, no network, no web search |
 | `claude` | full access, no sandbox | edits kept inside your project, dangerous commands blocked |
 | `opencode` | full access | asks before every edit and command, checked the same way; no web fetch, no web search, nothing outside your project |
+| `pi` | full access, no sandbox | the toolset narrowed to files and shell; nothing screens what those tools do |
+| `dsh` | full access, no sandbox | `DSH_PERMISSION_MODE=read-only` handed to the child — **best-effort**, see below |
 
-`--safe` is not equally strong on all three, and the CLI says so at launch:
+`--safe` is not equally strong on all five, and the CLI says so at launch:
 
 - **Only `codex` gets a real sandbox.** The operating system stops it writing outside your
   project. On `claude` and `opencode`, Airship checks each edit and command first — a good
-  check, but a check, not a wall.
+  check, but a check, not a wall. On `pi` and `dsh` there is no check at all.
+- **`dsh` can outrank Airship.** Its own `$DSH_HOME/settings.yaml` may set
+  `permission.defaultPreset: danger-full-access`, which beats the mode Airship exports. An
+  isolated `--dsh-agent-dir` — a dsh home Airship owns, with `read-only` in its settings — is
+  what makes `--safe` hold there, and Airship does not verify the result afterwards.
 - **That check looks for known-dangerous commands; it does not understand shell.** It catches
   `rm -rf`. It does not catch a write pointed somewhere else, like `echo x > /elsewhere`.
-- **`claude` and `opencode` can still reach the network.** Airship switches off their web tools,
-  but nothing stops a command they run from opening a connection anyway. Only a sandbox can.
+- **Every backend but `codex` can still reach the network.** Airship switches off the web tools
+  it knows about, but nothing stops a command an agent runs from opening a connection anyway.
+  Only a sandbox can.
 
 If a hard guarantee matters more to you than which agent you use, run
 `airship --agent codex --safe`.
@@ -340,21 +354,23 @@ stops asking. Takes `--cwd` and the global flags. Needs a terminal.
 ### `airship doctor`
 
 Checks, in order: `node`, `airship`, `config`, `git`, `git repo`, `overlay bundle`,
-`agent claude`, `agent codex`, `agent opencode`, `dev server`. Each reports `ok`, `warn` or
-`fail` with a hint. Only your preferred agent (`--agent`, default `claude`) can fail the run;
-the other two warn.
+`agent claude`, `agent codex`, `agent opencode`, `agent pi`, `agent dsh`, `dev server`. Each
+reports `ok`, `warn` or `fail` with a hint. Only your preferred agent (`--agent`, default
+`claude`) can fail the run; the other four warn.
 
 `git` and `git repo` are separate because they fail for different reasons and have different
 fixes: whether git can run at all, and whether this directory is somewhere it can usefully run
 (a work tree, with at least one commit, and a configured `user.name` / `user.email`). They fail
-the run on `--agent codex` and `--agent opencode`, which reconstruct their diff baseline from
-`HEAD`, and warn on `claude`, which snapshots its own before-state and needs no git to edit or
-undo.
+the run on `--agent codex`, `--agent opencode`, `--agent pi` and `--agent dsh`, which reconstruct
+their diff baseline from `HEAD`, and warn on `claude`, which snapshots its own before-state and
+needs no git to edit or undo.
 
 Exits `1` if any check failed, so `airship doctor && airship` works. Takes `--cwd`, `--target`,
-`--agent` and the global flags. `--json` prints the same checks as a machine-readable record,
-which is the most useful thing to send someone when a run is failing on a machine you cannot
-see.
+`--agent`, the four backend locations (`--pi-path`, `--pi-agent-dir`, `--dsh-path`,
+`--dsh-agent-dir` — each checked where you point it, and recorded in `airship.config.json` by
+`airship init`), and the global flags. `--json` prints the same checks as a machine-readable
+record, which is the most useful thing to send someone when a run is failing on a machine you
+cannot see.
 
 ### Exit codes
 

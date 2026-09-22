@@ -2,7 +2,7 @@
   "name": "airship",
   "version": "0.0.0",
   "private": true,
-  "description": "Airship — a visual editor for your running web app, driven by Claude Code, Codex or OpenCode",
+  "description": "Airship — a visual editor for your running web app, driven by Claude Code, Codex, OpenCode, pi or the DeepSeek Harness",
   "type": "module",
   "scripts": {
     "build": "turbo run build",

@@ -192,6 +192,7 @@ const AGENTS: { icon: IconName; kind: AgentKind; label: string }[] = [
   { icon: "codex", kind: "codex", label: "Codex" },
   { icon: "opencode", kind: "opencode", label: "OpenCode" },
   { icon: "pi", kind: "pi", label: "pi" },
+  { icon: "dsh", kind: "dsh", label: "DSH" },
 ];
 
 /**

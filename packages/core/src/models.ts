@@ -1,17 +1,19 @@
 /**
  * Which models each backend will accept, asked of the backend itself.
  *
- * The three harnesses answer this question very differently, and the asymmetry
+ * The five harnesses answer this question very differently, and the asymmetry
  * is the whole reason this module exists:
  *
  * | Backend  | How it enumerates                                        |
  * |----------|----------------------------------------------------------|
  * | claude   | `query.supportedModels()` — live, and account-aware       |
  * | opencode | `client.config.providers()` — live, only what is authed   |
+ * | pi       | `pi --list-models` — live, its own catalogue              |
  * | codex    | nothing. No subcommand, no RPC, no config to read        |
+ * | dsh      | only inside a session, and that route writes — see below  |
  *
- * So Claude and OpenCode are asked, and Codex is served from the generated seed
- * in `@airship/protocol/models`. The seed also backs the other two whenever a
+ * So Claude, OpenCode and pi are asked, and Codex and dsh are served from the
+ * seed in `@airship/protocol/models`. The seed also backs the others whenever a
  * probe fails, which is the common case on a machine that has only signed into
  * one of them.
  *
@@ -29,13 +31,14 @@ import type {
 import { AGENT_KINDS } from "@airship/protocol";
 import { SEED_MODELS } from "@airship/protocol/models";
 import { getAdapter } from "./agent";
+import type { DshSettings } from "./providers/dsh";
 import type { OpencodeSettings } from "./providers/opencode-server";
 import type { PiSettings } from "./providers/pi";
 
 /**
  * How long a single backend gets to answer.
  *
- * Generous, because two of the three probes start a subprocess and a cold
+ * Generous, because three of the five probes start a subprocess and a cold
  * `opencode serve` on a slow disk is not a failure. Bounded, because the menu
  * is already on screen showing the seed — this only decides how long the user
  * waits before the live list replaces it.
@@ -43,6 +46,7 @@ import type { PiSettings } from "./providers/pi";
 const PROBE_TIMEOUT_MS = 15_000;
 
 export interface ModelProbeOptions {
+  dsh?: DshSettings;
   opencode?: OpencodeSettings;
   pi?: PiSettings;
   safe?: boolean;
@@ -271,6 +275,26 @@ export async function listModels(
     // than left as a silent fallthrough — the absence is the point.
     if (agent === "codex") {
       return { agent, models: seed };
+    }
+
+    /*
+     * dsh *can* enumerate, and one route only: `session/new` answers with a
+     * `model` config option whose entries are every provider/model pair. There
+     * is no `--list-models` and no config file to read instead.
+     *
+     * It is still not probed, because that route is a write. Every
+     * `session/new` persists a session under `$DSH_HOME/sessions/<cwd>/`, and
+     * `session/close` leaves it there — dsh's own `session/list` reports it
+     * back. This runs for every harness on every launch, so a user who never
+     * picks dsh would collect empty sessions in their dsh history for opening
+     * the picker. The seed is what this backend gets.
+     */
+    if (agent === "dsh") {
+      return {
+        agent,
+        models: seed,
+        note: "Built-in list: dsh only reports its models inside a session",
+      };
     }
 
     if (agent === "claude") {

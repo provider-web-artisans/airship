@@ -14,12 +14,14 @@
  */
 
 import { AGENT_KINDS } from "@airship/protocol";
+import { SEED_MODELS } from "@airship/protocol/models";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAdapter } from "./agent";
 import {
   fromClaudeModels,
   fromOpencodeProviders,
   listAllModels,
+  listModels,
 } from "./models";
 
 vi.mock("./agent", () => ({ getAdapter: vi.fn() }));
@@ -128,6 +130,34 @@ describe("fromOpencodeProviders", () => {
   it("survives a provider with no models and an empty list", () => {
     expect(fromOpencodeProviders([{ id: "empty" }])).toEqual([]);
     expect(fromOpencodeProviders([])).toEqual([]);
+  });
+});
+
+/*
+ * dsh publishes its catalogue only inside a session: `session/new` answers with
+ * a `model` config option, and creating that session persists a record under
+ * `$DSH_HOME`. The route is deliberately not taken, so this pins the branch —
+ * an authenticated dsh comes back from the seed, with a note explaining why,
+ * and without starting anything.
+ */
+describe("listModels — dsh", () => {
+  const mockGetAdapter = vi.mocked(getAdapter);
+
+  beforeEach(() => {
+    mockGetAdapter.mockReset();
+  });
+
+  it("serves dsh from the seed rather than opening a session", async () => {
+    mockGetAdapter.mockResolvedValue({
+      checkAuth: () => ({ ok: true }),
+    } as unknown as Awaited<ReturnType<typeof getAdapter>>);
+
+    const group = await listModels("dsh", "/tmp");
+
+    expect(group.models.map((m) => m.id)).toEqual(
+      SEED_MODELS.dsh.map((m) => m.id)
+    );
+    expect(group.note).toContain("session");
   });
 });
 

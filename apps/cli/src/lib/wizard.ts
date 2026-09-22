@@ -112,6 +112,16 @@ const MODEL_DEFAULT = "\u0000default";
 const MODEL_CUSTOM = "\u0000custom";
 
 /**
+ * A sample id for the free-text box, in the form that backend's own `--model`
+ * wants. Anything missing falls back to a Claude id, which is the default
+ * backend and the shape most of them take.
+ */
+const MODEL_PLACEHOLDERS: Partial<Record<AgentKind, string>> = {
+  dsh: "deepseek-v4-flash",
+  opencode: "anthropic/claude-sonnet-5",
+};
+
+/**
  * Which model, for the agent just chosen.
  *
  * Asks the backend rather than offering a list from memory, so what is on
@@ -164,8 +174,7 @@ async function askForModel(
   const typed = unwrap(
     await text({
       message: "Model id",
-      placeholder:
-        agent === "opencode" ? "anthropic/claude-sonnet-5" : "claude-opus-5",
+      placeholder: MODEL_PLACEHOLDERS[agent] ?? "claude-opus-5",
       validate: (value) =>
         agent === "opencode" && value && !value.includes("/")
           ? "opencode needs the provider/model form, e.g. anthropic/claude-sonnet-5."

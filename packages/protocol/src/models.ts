@@ -1,6 +1,7 @@
 // AUTO-GENERATED from https://models.dev/models.json by scripts/gen-models.mjs.
 // Do not edit by hand — edit scripts/models.curation.json and run
-// `make models:refresh`. 34 models across three harnesses.
+// `make models:refresh`. 38 models across five harnesses: the three models.dev
+// vendors are generated, and the pi and dsh groups are hand-maintained.
 
 /**
  * The model list the picker paints before anything has been asked, and falls
@@ -38,7 +39,7 @@ export interface SeedModel {
  * `AGENT_KINDS` instead, which catches the drift the import would have.
  */
 export const SEED_MODELS: Record<
-  "claude" | "codex" | "opencode" | "pi",
+  "claude" | "codex" | "opencode" | "pi" | "dsh",
   SeedModel[]
 > = {
   claude: [
@@ -76,6 +77,16 @@ export const SEED_MODELS: Record<
     { hint: "1.1M", id: "gpt-5.4", label: "GPT-5.4" },
     { hint: "1.1M", id: "gpt-5.4-pro", label: "GPT-5.4 Pro" },
     { hint: "400K", id: "gpt-5.3-codex", label: "GPT-5.3 Codex" },
+  ],
+  // dsh is not on models.dev, and it has no `--list-models`: its catalogue
+  // exists only inside an ACP session, where `session/new` answers with a
+  // `model` config option. Airship does not open one of those just to paint the
+  // picker — it is persisted under $DSH_HOME and outlives the read — so this
+  // block is hand-maintained. The ids are bare: dsh carries the provider
+  // beside the model, never inside the id.
+  dsh: [
+    { hint: "1M", id: "deepseek-v4-flash", label: "DeepSeek-V4-Flash" },
+    { hint: "1M", id: "deepseek-v4-pro", label: "DeepSeek-V4-Pro" },
   ],
   opencode: [
     { hint: "1M", id: "anthropic/claude-opus-5", label: "Claude Opus 5" },

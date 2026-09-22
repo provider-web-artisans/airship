@@ -20,7 +20,13 @@ import { PREFIX } from "../dom";
 const KEY = `${PREFIX}-model`;
 
 /** The agents a stored value may name, in the picker's order. */
-const KINDS: readonly AgentKind[] = ["claude", "codex", "opencode", "pi"];
+const KINDS: readonly AgentKind[] = [
+  "claude",
+  "codex",
+  "opencode",
+  "pi",
+  "dsh",
+];
 
 export interface ModelPickState {
   /** The backend the composer is on. */

@@ -12,6 +12,7 @@ import {
   type AirshipSurface,
   type CodexSettings,
   checkAuth,
+  type DshSettings,
   type Effort,
   type OpencodeSettings,
   type PiSettings,
@@ -72,6 +73,9 @@ export const SERVE_FLAGS: readonly string[] = [
   "pi-model",
   "pi-path",
   "pi-agent-dir",
+  "dsh-model",
+  "dsh-path",
+  "dsh-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -81,6 +85,7 @@ export interface ServeOptions {
   autoCommit: boolean;
   codex: CodexSettings;
   cwd: string;
+  dsh: DshSettings;
   effort?: Effort;
   exec?: string;
   host?: string;
@@ -137,6 +142,10 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
       config: Object.keys(codexConfig).length > 0 ? codexConfig : undefined,
     } satisfies CodexSettings,
     cwd,
+    dsh: {
+      agentDir: asString(settings, "dsh-agent-dir"),
+      dshPath: asString(settings, "dsh-path"),
+    } satisfies DshSettings,
     effort: effort ? (requireEnum(effort, "effort") as Effort) : undefined,
     exec: asString(settings, "exec"),
     host: host ? requireHost(host, "host") : undefined,
@@ -148,10 +157,11 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
     // The fallback collapses here rather than in the server so there is one
     // place that decides it, and one place the tests have to cover. Only the
     // opencode entry is validated: that flag names its backend, so a bare id
-    // is unambiguously wrong. `model` reaches all three and cannot be.
+    // is unambiguously wrong. `model` reaches every backend and cannot be.
     models: {
       claude: asString(settings, "claude-model") ?? model,
       codex: asString(settings, "codex-model") ?? model,
+      dsh: asString(settings, "dsh-model") ?? model,
       opencode: opencodeModel
         ? requireModelRef(opencodeModel, "opencode-model")
         : model,
@@ -341,6 +351,7 @@ export const serve = defineCommand({
         autoCommit: opts.autoCommit,
         codex: opts.codex,
         cwd: opts.cwd,
+        dsh: opts.dsh,
         effort: opts.effort,
         host: opts.host,
         keepCsp: opts.keepCsp,

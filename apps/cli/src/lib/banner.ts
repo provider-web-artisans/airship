@@ -28,6 +28,14 @@ export function safetyBanner(agent: AgentKind, safe: boolean): string {
       "    still write anywhere you can and reach the network.\n"
     );
   }
+  if (agent === "dsh") {
+    return (
+      `  ${style.yellow("Barely screened:")} airship hands dsh DSH_PERMISSION_MODE=read-only, and\n` +
+      "    dsh's own settings can outrank it — nothing verifies the result. There is\n" +
+      "    no OS sandbox, no edit or command screen, and the agent can still write\n" +
+      "    anywhere you can and reach the network.\n"
+    );
+  }
   // claude and opencode share the same guards, and neither cuts the socket.
   return (
     `  ${style.yellow("Screened:")} edits are confined to the project and destructive commands are\n` +

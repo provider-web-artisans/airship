@@ -46,6 +46,7 @@ describe("toServeOptions — models", () => {
     expect(models.claude).toBeUndefined();
     expect(models.codex).toBeUndefined();
     expect(models.opencode).toBeUndefined();
+    expect(models.dsh).toBeUndefined();
   });
 
   it("spreads a bare --model to every backend", () => {
@@ -53,6 +54,7 @@ describe("toServeOptions — models", () => {
     expect(models).toEqual({
       claude: "sonnet",
       codex: "sonnet",
+      dsh: "sonnet",
       opencode: "sonnet",
       pi: "sonnet",
     });
@@ -67,15 +69,17 @@ describe("toServeOptions — models", () => {
     expect(models.opencode).toBe("sonnet");
   });
 
-  it("takes all three per-backend models independently", () => {
+  it("takes each per-backend model independently", () => {
     const { models } = optionsFor({
       "claude-model": "opus",
       "codex-model": "gpt-5.3-codex",
+      "dsh-model": "deepseek-v4-flash",
       "opencode-model": "anthropic/claude-sonnet-5",
     });
     expect(models).toEqual({
       claude: "opus",
       codex: "gpt-5.3-codex",
+      dsh: "deepseek-v4-flash",
       opencode: "anthropic/claude-sonnet-5",
     });
   });

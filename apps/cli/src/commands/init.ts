@@ -42,6 +42,8 @@ export const INIT_FLAGS: readonly string[] = [
   "opencode-config",
   "pi-path",
   "pi-agent-dir",
+  "dsh-path",
+  "dsh-agent-dir",
   ...GLOBAL_FLAGS,
 ];
 
@@ -83,6 +85,10 @@ export const init = defineCommand({
     const answers = await runWizard(cwd, {
       askModel: true,
       probe: {
+        dsh: {
+          agentDir: asString(settings, "dsh-agent-dir"),
+          dshPath: asString(settings, "dsh-path"),
+        },
         opencode: {
           config: readOpencodeConfig(asString(settings, "opencode-config")),
           opencodePath: asString(settings, "opencode-path"),

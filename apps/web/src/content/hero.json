@@ -1,7 +1,7 @@
 {
   "eyebrow": "Works with",
   "heading": "Visual editor for your codebase",
-  "sub": "Airship lets you edit your running app visually with Claude Code, Codex, or OpenCode. Select an element, describe the change, and watch the source update.",
+  "sub": "Airship lets you edit your running app visually with Claude Code, Codex, OpenCode, pi or DeepSeek Harness. Select an element, describe the change, and watch the source update.",
   "ctaLabel": "Get started",
   "ctaHref": "#get-started",
   "installCommand": "{{installCommand}}"
