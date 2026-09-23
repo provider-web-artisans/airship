@@ -12,7 +12,7 @@ import { fill, linkFor } from "#/content/resolve";
  * Two entries in site.json's `links` are deliberately NOT referenced here.
  * Both now name the right thing and still do not resolve: `license` points at
  * /blob/main/LICENSE, which the repo has, but the repo is not public yet; `npm`
- * points at @airshiplabs/cli, which is the package apps/cli publishes but has
+ * points at @provider-web-artisans/cli, which is the package apps/cli publishes but has
  * not published. A footer is the worst place to keep a dead link — it is the
  * part of a page people trust to be boringly correct. Add them back to
  * footer.json once the repo is public and the first version is on npm.

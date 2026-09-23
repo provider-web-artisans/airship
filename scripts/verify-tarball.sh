@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Asserts the @airshiplabs/cli tarball is actually shippable before it goes out.
+# Asserts the @provider-web-artisans/cli tarball is actually shippable before it goes out.
 #
 # Why this exists: `files: ["dist"]` silently matches nothing when dist/ has not
 # been built, so `pnpm publish` succeeds and ships a package.json and a LICENSE.
@@ -19,11 +19,11 @@
 # Packing uses `pnpm pack`, not `npm pack`: only pnpm rewrites the `workspace:*`
 # devDependencies into real versions, and npm would ship the literal protocol.
 #
-# Assumes the CLI is already built (`pnpm turbo run build --filter=@airshiplabs/cli`).
+# Assumes the CLI is already built (`pnpm turbo run build --filter=@provider-web-artisans/cli`).
 set -euo pipefail
 
 PKG_DIR="apps/cli"
-PKG_NAME="@airshiplabs/cli"
+PKG_NAME="@provider-web-artisans/cli"
 
 # Every path the published CLI resolves at runtime but no bundler can inline.
 # dist/vendor/ is written by apps/cli/scripts/vendor-assets.mjs; without it the

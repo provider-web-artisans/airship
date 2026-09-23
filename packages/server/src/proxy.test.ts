@@ -7,12 +7,14 @@ import { filterProxyHeaders, resolveMode } from "./proxy";
 function req(opts: {
   cookie?: string;
   dest?: string;
+  site?: string;
   url?: string;
 }): http.IncomingMessage {
   return {
     headers: {
       ...(opts.cookie ? { cookie: opts.cookie } : {}),
       ...(opts.dest ? { "sec-fetch-dest": opts.dest } : {}),
+      ...(opts.site ? { "sec-fetch-site": opts.site } : {}),
     },
     url: opts.url ?? "/",
   } as unknown as http.IncomingMessage;
@@ -87,6 +89,48 @@ describe("resolveMode", () => {
     it("never applies to an HTML partial", () => {
       const request = req({ cookie: cookie("canvas"), dest: "empty" });
       expect(resolveMode(request, "inline")).toBe("passthrough");
+    });
+  });
+
+  describe("a frame owned by another origin's document", () => {
+    // What a sidebar tab in a harness, or an IDE panel, sends: the editor is
+    // that document's whole content, so it is a navigation to the surface
+    // choice — the default, or the sticky preference, never a bare frame.
+    for (const site of ["same-site", "cross-site", "none"]) {
+      it(`serves the canvas default for site=${site}`, () => {
+        expect(resolveMode(req({ dest: "iframe", site }), "shell")).toBe(
+          "shell"
+        );
+      });
+
+      it(`serves the inline default for site=${site}`, () => {
+        expect(resolveMode(req({ dest: "iframe", site }), "inline")).toBe(
+          "inline"
+        );
+      });
+
+      it(`lets the surface cookie switch it for site=${site}`, () => {
+        const request = req({ cookie: cookie("inline"), dest: "iframe", site });
+        expect(resolveMode(request, "shell")).toBe("inline");
+      });
+    }
+
+    it("still serves our own same-origin frame as a frame", () => {
+      const request = req({
+        cookie: cookie("inline"),
+        dest: "iframe",
+        site: "same-origin",
+      });
+      expect(resolveMode(request, "shell")).toBe("frame");
+    });
+
+    it("treats a missing Sec-Fetch-Site as our own frame", () => {
+      expect(resolveMode(req({ dest: "iframe" }), "shell")).toBe("frame");
+    });
+
+    it("leaves an HTML partial alone whoever asks for it", () => {
+      const request = req({ dest: "empty", site: "cross-site" });
+      expect(resolveMode(request, "shell")).toBe("passthrough");
     });
   });
 

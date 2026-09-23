@@ -15,8 +15,8 @@
 # the fix is always the next patch (npm never lets you republish a version).
 set -euo pipefail
 
-PKG_NAME="@airshiplabs/cli"
-PKG_URL="https://registry.npmjs.org/@airshiplabs%2Fcli"
+PKG_NAME="@provider-web-artisans/cli"
+PKG_URL="https://registry.npmjs.org/@provider-web-artisans%2Fcli"
 ATTEMPTS=6
 DELAY=5
 

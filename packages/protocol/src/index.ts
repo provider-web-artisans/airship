@@ -698,7 +698,18 @@ export interface GitHealth {
 export type ServerEvent =
   /** `defaultAgent` is the daemon's `--agent` setting, so the composer's picker
    * can render the right backend on first paint instead of guessing. */
-  | { type: "hello"; jobs: JobSnapshot[]; defaultAgent: AgentKind }
+  | {
+      type: "hello";
+      jobs: JobSnapshot[];
+      defaultAgent: AgentKind;
+      /**
+       * The editor drives a session that lives elsewhere — a harness the
+       * server was pointed at with `--dsh-url`. Its conversation is that
+       * session's, so the overlay keeps no chat of its own and hands what it
+       * selects to the document that frames it instead.
+       */
+      attached?: boolean;
+    }
   /** Pushed on connect and again after every turn, since a repo can gain its
    * first commit — or lose its git — while the overlay is open. */
   | { type: "git:health"; health: GitHealth }
@@ -734,6 +745,8 @@ export type ServerEvent =
   /** The project's design tokens, scanned from the files on disk. Answers a
    * `tokens` request; also pushed unprompted once the first scan completes. */
   | { type: "tokens:result"; scan: TokenScanResult }
+  /** The answer to a `source` request, by its `id`. */
+  | { type: "source:result"; id: string; source: SourceLocation | null }
   /** What each backend offers, answering a `models` request. Sent to the asking
    * socket only — the probe is per-connection work, and a broadcast would repaint
    * every other tab's open menu underneath its user. */
@@ -784,6 +797,20 @@ export const ClientMessageSchema = z.discriminatedUnion("type", [
   z.object({
     refresh: z.boolean().optional(),
     type: z.literal("tokens"),
+  }),
+  /**
+   * Where an element lives in the source, as the server would work it out
+   * for a turn — the browser's own answer when it has one, else a scored
+   * search of the project. Asked ahead of a turn by an attached editor, which
+   * hands selections to a harness instead of composing turns itself and
+   * would otherwise hand them over without a file. Read-only; answered off
+   * the edit chain with the same `id`.
+   */
+  z.object({
+    element: ElementContextSchema,
+    id: z.string(),
+    source: SourceLocationSchema.nullable(),
+    type: z.literal("source"),
   }),
   /**
    * Which models each backend offers. Read-only, so the server answers it off

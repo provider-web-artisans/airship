@@ -1,7 +1,7 @@
 // Generates apps/cli/README.md from the root README.md.
 //
 // Why this exists: npm renders a package's README from the PACKAGE directory,
-// and apps/cli has never had one — so @airshiplabs/cli's npm page reads "This
+// and apps/cli has never had one — so @provider-web-artisans/cli's npm page reads "This
 // package does not have a README" while a 400-line one sits at the repo root.
 // pnpm copies the root LICENSE into a workspace package that lacks one; it does
 // not do the same for README, and `files: ["dist"]` does not reach up either.

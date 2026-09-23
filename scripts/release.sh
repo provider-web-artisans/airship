@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Guided release cutter for @airshiplabs/cli.
+# Guided release cutter for @provider-web-artisans/cli.
 #
 # Bumps apps/cli/package.json, refreshes the lockfile, validates the build and
 # the npm packaging (dry-run), then creates the release commit and the
@@ -20,7 +20,7 @@ set -euo pipefail
 
 PKG_DIR="apps/cli"
 PKG_JSON="$PKG_DIR/package.json"
-PKG_NAME="@airshiplabs/cli"
+PKG_NAME="@provider-web-artisans/cli"
 TAG_PREFIX="cli-v"
 
 # Colors only when stdout is a terminal, so piping this into a log stays clean.
