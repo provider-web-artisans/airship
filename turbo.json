@@ -20,7 +20,7 @@
     "clean": {
       "cache": false
     },
-    "@airshiplabs/cli#build": {
+    "@provider-web-artisans/cli#build": {
       "dependsOn": [
         "^build",
         "@airship/overlay#build",

@@ -81,6 +81,7 @@ import {
   resolveModelValue,
   usageFromAcpUpdate,
 } from "./dsh-acp";
+import { type DshAttachSettings, runAttachedTurn } from "./dsh-attach";
 import { STRUCTURED_OPENERS, splitStructured } from "./opencode-events";
 import { parseStructured } from "./opencode-reduce";
 import { synthesizePatch } from "./shared";
@@ -95,6 +96,14 @@ export interface DshSettings {
   agentDir?: string;
   /** Override the binary (`dsh` on PATH by default). */
   dshPath?: string;
+  /** `DSH_HOME` of an already-running host, whose credential record mints the
+   * cookie for the attach path. Defaults to `$DSH_HOME` or `~/.dsh`. */
+  home?: string;
+  /** The session to drive when attaching. A fresh one is created when absent. */
+  sessionId?: string;
+  /** Drive the session on that host instead of spawning a child. Its absence
+   * is what selects the spawn path, so this is the switch, not a hint. */
+  url?: string;
 }
 
 const WHITESPACE = /\s/;
@@ -764,8 +773,30 @@ async function attempt(
   };
 }
 
+/**
+ * The attach triple, when `--dsh-url` selected that path. `home` falls back to
+ * the environment a spawned child would have inherited, so a person who already
+ * exports `DSH_HOME` does not have to name it twice.
+ */
+function attachSettings(
+  settings: DshSettings | undefined
+): DshAttachSettings | null {
+  if (!settings?.url) {
+    return null;
+  }
+  return {
+    home: settings.home,
+    sessionId: settings.sessionId,
+    url: settings.url,
+  };
+}
+
 async function run(ctx: AgentRunContext): Promise<AgentRunOutcome> {
   const { input } = ctx;
+  const attached = attachSettings(input.dsh);
+  if (attached) {
+    return await runAttachedTurn(ctx, attached);
+  }
   const binary = resolveDshBinary(input.dsh?.dshPath);
   if (!binary) {
     return { error: checkAuth(input.dsh).reason, sessionId: null };
@@ -839,6 +870,11 @@ export function checkAuth(settings?: DshSettings): {
   ok: boolean;
   reason?: string;
 } {
+  if (settings?.url) {
+    // The attach path spends a request on its own check (`checkAttach`), which
+    // can tell a wrong home from a dead port; there is no binary to look for.
+    return { ok: true };
+  }
   if (resolveDshBinary(settings?.dshPath)) {
     return { ok: true };
   }

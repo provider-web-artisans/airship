@@ -8,7 +8,7 @@
 
 ## What it is
 
-A CLI. `npx @airshiplabs/cli --target 3000` starts a universal reverse proxy in
+A CLI. `npx @provider-web-artisans/cli --target 3000` starts a universal reverse proxy in
 front of the dev server you already have and opens the editor on the next port.
 Nothing is added to your dependencies, your config or your bundle.
 

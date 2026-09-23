@@ -1132,8 +1132,21 @@ export class SelectionController {
   }
 
   private readonly onClick = (e: MouseEvent): void => {
-    // Inspect reports rather than selects.
-    if (this.inspecting || isOwn(e.target)) {
+    if (isOwn(e.target)) {
+      return;
+    }
+    // Inspect reports on hover; a click pins what it reports. The pin is a
+    // plain selection — the panel's read-out follows it, and an attached
+    // editor hands it to the harness — with none of Move's consequences: no
+    // drag arming, no text entry, and no deselect on blank canvas, which in a
+    // read-out mode would only tear down what was being read.
+    if (this.inspecting) {
+      const found = this.pick({ x: e.clientX, y: e.clientY });
+      if (found) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.select(found.node, found.surface, "replace");
+      }
       return;
     }
     // A drag leaves a synthetic click whose target is the common ancestor of

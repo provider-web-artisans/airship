@@ -14,6 +14,9 @@ export type { EditPromptInput } from "./prompt";
 export { AIRSHIP_SYSTEM_PROMPT, buildEditPrompt, systemPrompt } from "./prompt";
 export type { CodexConfigValue, CodexSettings } from "./providers/codex";
 export type { DshSettings } from "./providers/dsh";
+/** Whether an already-running dsh host answers, so a caller can say so before a
+ * turn is spent on it. */
+export { checkAttach } from "./providers/dsh-attach";
 /** Whether opencode can run a model id, so a caller can refuse one it cannot. */
 export { namesProvider } from "./providers/opencode-events";
 export type { OpencodeSettings } from "./providers/opencode-server";

@@ -186,6 +186,8 @@ importers:
         specifier: ^26.2.0
         version: 26.2.0
 
+  packages/dsh-plugin: {}
+
   packages/editor-icons:
     devDependencies:
       yaml:

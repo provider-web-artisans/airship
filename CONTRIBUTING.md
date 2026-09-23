@@ -96,8 +96,9 @@ If you cloned before that file existed, renormalize once with
 | `@airship/editor-tokens` | The editor's own `--ap-*` design tokens, generated from `EDITOR.md` |
 | `@airship/editor-icons` | Vendored UI icon set, normalised to one generated module |
 | `@airship/site-tokens` | The home page's `--pk-*` design tokens, generated from `DESIGN.md` |
-| `@airshiplabs/cli` | The `airship` binary — the one package published to npm |
+| `@provider-web-artisans/cli` | The `airship` binary — the one package published to npm |
 | `@airship/web` | The home page — and the app Airship edits in `make run` |
+| `@provider-web-artisans/dsh-plugin` | The DeepSeek Harness plugin: a sidebar page, three tools and the `/airship/*` routes that run the CLI attached to a harness session. Plain JS, no build, loaded by the harness from `packages/dsh-plugin` — its README is the contributor's half |
 
 ## Everyday commands
 
@@ -166,10 +167,10 @@ nothing for a bundle that already inlined them. On-demand rebuild is the loop.
 
 **How the check works.** Before launching, the wrapper compares `apps/cli/dist/index.js`
 against `apps/cli/` and every `packages/*/` — the package roots, not just their `src/`, because
-`turbo run build --filter=@airshiplabs/cli --dry=json` shows the real input set reaching
+`turbo run build --filter=@provider-web-artisans/cli --dry=json` shows the real input set reaching
 `package.json`, `tsconfig.json`, `tsup.config.ts`, `scripts/` and those `assets/` trees. Build
 output and machinery (`dist`, `node_modules`, dotted directories) are skipped. If anything is
-newer it runs `turbo run build --filter=@airshiplabs/cli` — the CLI's slice of the graph, so
+newer it runs `turbo run build --filter=@provider-web-artisans/cli` — the CLI's slice of the graph, so
 `apps/web` is never touched — and otherwise launches straight through, for about 90 ms of
 overhead.
 
@@ -186,7 +187,7 @@ Two details worth knowing when it surprises you:
   timestamps without changing bytes (`git checkout` and back, `git stash pop`, an
   `ultracite fix` pass) hits exactly that path.
 
-Finally: run `./airship`, not `airship`. If you have `@airshiplabs/cli` installed globally, the
+Finally: run `./airship`, not `airship`. If you have `@provider-web-artisans/cli` installed globally, the
 bare name runs the *published* binary from inside this repo, and `--version` will often not
 tell them apart.
 
@@ -199,7 +200,7 @@ something else can start against it.
   `dist/tokens.css` to import until that package's postbuild has emitted it. Start the site
   through turbo (`make web:dev`, `pnpm dev:web`) rather than with a bare `vite dev`.
 - **Storybook must start through turbo** for the same reason — see below.
-- **`@airshiplabs/cli#build` depends on `@airship/overlay#build` and
+- **`@provider-web-artisans/cli#build` depends on `@airship/overlay#build` and
   `@airship/editor-tokens#build`**, on top of the usual `^build`. Those two are not imported,
   they are *served*: `packages/server/src/proxy.ts` resolves the overlay IIFEs and the editor
   fonts at runtime, so no bundler can inline them and their `dist` has to be on disk. It is
@@ -360,6 +361,26 @@ Gaps and wire quirks, handled explicitly rather than faked:
 - **bash rows keep the exit code.** dsh reports a non-zero exit as a *completed* call with
   `[exit code: N]` appended to the result text; the adapter strips the marker into
   `typed.exitCode` and leaves `isError` false, as Codex and pi do.
+
+#### Attached to a running harness
+
+`--dsh-url <host> --dsh-session <id>` selects a second path, `providers/dsh-attach.ts`,
+which does not spawn anything: it drives a session a person already has open in the
+harness GUI. The spawn path cannot reach one — the session store holds a `flock(2)` write
+lease for the process that owns it, and ACP's `session/resume` refuses a session that is
+still active — but the host's mux is multi-client, so the attach path is another *client*
+of the same host: the `/api` unary channel for commands and the `/api/remote.mux`
+WebSocket for the event stream, with a cookie minted from the host's own credential
+record. The wire shapes there are DSH's own, not ACP's, read off a live host running the
+pinned release; the reducer is tested against those frames.
+
+Three things differ from the spawn path and are deliberate: the conversation is the
+session's own (the harness keeps governing the turn — its permission preset, its approval
+UI — so `--safe` and the sandbox flags do not apply); no preamble is prepended (the session
+already carries the harness's system prompt); and `hello.attached` tells the overlay to
+drop its own chat dock, so selections go to the harness's composer instead
+(`packages/overlay/src/attached.ts`). The harness side of that — the page, the
+`/airship/*` routes, the composer chips — lives in `packages/dsh-plugin`.
 
 ## The site
 
@@ -567,7 +588,7 @@ prerendering off is the change to make, not working around it.
 
 ## Releases
 
-`@airshiplabs/cli` is the only package published to npm. Everything else in the workspace is
+`@provider-web-artisans/cli` is the only package published to npm. Everything else in the workspace is
 private and gets **inlined into the CLI bundle** at build time, so the published tarball declares
 no `@airship/*` dependency.
 

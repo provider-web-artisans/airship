@@ -1,0 +1,13 @@
+# The Airship bundle's layer: one host plugin row.
+#
+# The host half registers the `airship_*` tools. The client half needs no row
+# here: the loader discovers it from this package's `dsh.client` manifest, which
+# is also what puts it in the session's module graph.
+#
+# The row names the package rather than a path so the layer survives being
+# installed anywhere; a local checkout can be patched in by replacing the name
+# with an absolute path to `index.js`.
+
+- insert:
+    - id: airship
+      name: '@provider-web-artisans/dsh-plugin'

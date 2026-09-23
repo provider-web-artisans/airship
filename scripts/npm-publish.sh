@@ -29,7 +29,7 @@
 #                (default 15) — set to 0 to exercise the retry paths in a test
 set -euo pipefail
 
-PKG_NAME="@airshiplabs/cli"
+PKG_NAME="@provider-web-artisans/cli"
 ATTEMPTS="${ATTEMPTS:-3}"
 DELAY="${DELAY:-15}"
 
