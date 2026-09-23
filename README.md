@@ -1,8 +1,8 @@
 # Airship
 
-[![npm](https://img.shields.io/npm/v/@airshiplabs/cli)](https://www.npmjs.com/package/@airshiplabs/cli)
-[![node](https://img.shields.io/node/v/@airshiplabs/cli)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/@airshiplabs/cli)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@provider-web-artisans/cli)](https://www.npmjs.com/package/@provider-web-artisans/cli)
+[![node](https://img.shields.io/node/v/@provider-web-artisans/cli)](https://nodejs.org)
+[![license](https://img.shields.io/npm/l/@provider-web-artisans/cli)](LICENSE)
 
 **Visual editor for your codebase.**
 
@@ -13,7 +13,7 @@ without rebuilding your UI in a separate design tool.
 ![Airship mid-edit: the prompt "Turn this into a github icon" streaming its reads, writes and edits, a desktop and an iPhone frame side by side on the canvas, and the Edit inspector open on the selection](media/inspector-edit.png)
 
 ```bash
-npx @airshiplabs/cli --target 3000
+npx @provider-web-artisans/cli --target 3000
 ```
 
 No plugin. No config. Nothing added to your dependencies or your bundle.
@@ -38,14 +38,14 @@ required.
 **2. Point Airship at your dev server.**
 
 ```bash
-npx @airshiplabs/cli --target 3000
+npx @provider-web-artisans/cli --target 3000
 ```
 
 Airship connects to the port you're already running and opens the visual editor on the next
 free port. Or install it once and use the `airship` binary:
 
 ```bash
-npm i -g @airshiplabs/cli
+npm i -g @provider-web-artisans/cli
 airship --target 3000
 ```
 

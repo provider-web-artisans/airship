@@ -18,7 +18,7 @@
     "ctaLabel": "Get started",
     "heading": "Point at it, describe the change.",
     "nav": ["Overview", "How it works", "FAQ"],
-    "secondaryLabel": "npx @airshiplabs/cli",
+    "secondaryLabel": "npx @provider-web-artisans/cli",
     "sub": "An infinite design canvas in front of the dev server you already have."
   },
   "selection": {

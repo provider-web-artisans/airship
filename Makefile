@@ -290,7 +290,7 @@ demo: ## One-shot: install + build, then print the two-terminal recipe
 	@echo "  That is airship editing its own home page. Pick the hero's button,"
 	@echo "  ask for a change, and watch the diff land in apps/web/src/."
 
-##@ Release (@airshiplabs/cli)
+##@ Release (@provider-web-artisans/cli)
 
 .PHONY: controls models\:refresh readme release release\:ci release\:retry release\:version
 

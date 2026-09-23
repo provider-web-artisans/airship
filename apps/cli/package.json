@@ -1,5 +1,5 @@
 {
-  "name": "@airshiplabs/cli",
+  "name": "@provider-web-artisans/cli",
   "version": "0.3.0",
   "description": "Airship — a visual editor for your running web app, driven by Claude Code, Codex, OpenCode, pi or the DeepSeek Harness",
   "keywords": [
