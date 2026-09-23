@@ -96,7 +96,7 @@ If you cloned before that file existed, renormalize once with
 | `@airship/editor-tokens` | The editor's own `--ap-*` design tokens, generated from `EDITOR.md` |
 | `@airship/editor-icons` | Vendored UI icon set, normalised to one generated module |
 | `@airship/site-tokens` | The home page's `--pk-*` design tokens, generated from `DESIGN.md` |
-| `@airshiplabs/cli` | The `airship` binary — the one package published to npm |
+| `@provider-web-artisans/cli` | The `airship` binary — the one package published to npm |
 | `@airship/web` | The home page — and the app Airship edits in `make run` |
 
 ## Everyday commands
@@ -166,10 +166,10 @@ nothing for a bundle that already inlined them. On-demand rebuild is the loop.
 
 **How the check works.** Before launching, the wrapper compares `apps/cli/dist/index.js`
 against `apps/cli/` and every `packages/*/` — the package roots, not just their `src/`, because
-`turbo run build --filter=@airshiplabs/cli --dry=json` shows the real input set reaching
+`turbo run build --filter=@provider-web-artisans/cli --dry=json` shows the real input set reaching
 `package.json`, `tsconfig.json`, `tsup.config.ts`, `scripts/` and those `assets/` trees. Build
 output and machinery (`dist`, `node_modules`, dotted directories) are skipped. If anything is
-newer it runs `turbo run build --filter=@airshiplabs/cli` — the CLI's slice of the graph, so
+newer it runs `turbo run build --filter=@provider-web-artisans/cli` — the CLI's slice of the graph, so
 `apps/web` is never touched — and otherwise launches straight through, for about 90 ms of
 overhead.
 
@@ -186,7 +186,7 @@ Two details worth knowing when it surprises you:
   timestamps without changing bytes (`git checkout` and back, `git stash pop`, an
   `ultracite fix` pass) hits exactly that path.
 
-Finally: run `./airship`, not `airship`. If you have `@airshiplabs/cli` installed globally, the
+Finally: run `./airship`, not `airship`. If you have `@provider-web-artisans/cli` installed globally, the
 bare name runs the *published* binary from inside this repo, and `--version` will often not
 tell them apart.
 
@@ -199,7 +199,7 @@ something else can start against it.
   `dist/tokens.css` to import until that package's postbuild has emitted it. Start the site
   through turbo (`make web:dev`, `pnpm dev:web`) rather than with a bare `vite dev`.
 - **Storybook must start through turbo** for the same reason — see below.
-- **`@airshiplabs/cli#build` depends on `@airship/overlay#build` and
+- **`@provider-web-artisans/cli#build` depends on `@airship/overlay#build` and
   `@airship/editor-tokens#build`**, on top of the usual `^build`. Those two are not imported,
   they are *served*: `packages/server/src/proxy.ts` resolves the overlay IIFEs and the editor
   fonts at runtime, so no bundler can inline them and their `dist` has to be on disk. It is
@@ -567,7 +567,7 @@ prerendering off is the change to make, not working around it.
 
 ## Releases
 
-`@airshiplabs/cli` is the only package published to npm. Everything else in the workspace is
+`@provider-web-artisans/cli` is the only package published to npm. Everything else in the workspace is
 private and gets **inlined into the CLI bundle** at build time, so the published tarball declares
 no `@airship/*` dependency.
 

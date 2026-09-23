@@ -2,7 +2,7 @@ name: Publish (CI)
 
 run-name: "Publish · ${{ inputs.version || inputs.bump }}${{ inputs.dry_run && ' (dry-run)' || '' }}"
 
-# All-in-CI release for @airshiplabs/cli: pick a bump (or an explicit version)
+# All-in-CI release for @provider-web-artisans/cli: pick a bump (or an explicit version)
 # and this bumps apps/cli/package.json, builds, publishes, then commits and tags
 # cli-vX.Y.Z and pushes — the CI equivalent of `make release` plus pushing the
 # tag, with no local steps.
@@ -98,7 +98,7 @@ jobs:
           fi
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
           echo "tag=cli-v$NEXT" >> "$GITHUB_OUTPUT"
-          echo "::notice::Releasing @airshiplabs/cli v$NEXT (tag cli-v$NEXT)"
+          echo "::notice::Releasing @provider-web-artisans/cli v$NEXT (tag cli-v$NEXT)"
 
       # Asks git AND npm, because those two can disagree — that is the whole
       # failure this job is now built around. A bare "tag already exists" is
@@ -118,7 +118,7 @@ jobs:
             tagged=1
           fi
           published=0
-          if npm view "@airshiplabs/cli@$NEXT" version >/dev/null 2>&1; then
+          if npm view "@provider-web-artisans/cli@$NEXT" version >/dev/null 2>&1; then
             published=1
           fi
 
@@ -149,7 +149,7 @@ jobs:
       # That is how v0.2.0 shipped with no dist/. Build explicitly, then pack
       # for real and look inside.
       - name: Build the CLI
-        run: pnpm turbo run build --filter=@airshiplabs/cli
+        run: pnpm turbo run build --filter=@provider-web-artisans/cli
 
       # Pack with pnpm, publish that exact tarball with npm. Neither tool does
       # both halves: only `pnpm pack` rewrites the `workspace:*` devDependencies
@@ -161,7 +161,7 @@ jobs:
         id: pack
         working-directory: apps/cli
         run: |
-          TGZ="$RUNNER_TEMP/airshiplabs-cli.tgz"
+          TGZ="$RUNNER_TEMP/provider-web-artisans-cli.tgz"
           pnpm pack --out "$TGZ"
           echo "tgz=$TGZ" >> "$GITHUB_OUTPUT"
 
