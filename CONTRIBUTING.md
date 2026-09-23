@@ -98,6 +98,7 @@ If you cloned before that file existed, renormalize once with
 | `@airship/site-tokens` | The home page's `--pk-*` design tokens, generated from `DESIGN.md` |
 | `@provider-web-artisans/cli` | The `airship` binary — the one package published to npm |
 | `@airship/web` | The home page — and the app Airship edits in `make run` |
+| `@provider-web-artisans/dsh-plugin` | The DeepSeek Harness plugin: a sidebar page, three tools and the `/airship/*` routes that run the CLI attached to a harness session. Plain JS, no build, loaded by the harness from `packages/dsh-plugin` — its README is the contributor's half |
 
 ## Everyday commands
 
@@ -378,7 +379,8 @@ session's own (the harness keeps governing the turn — its permission preset, i
 UI — so `--safe` and the sandbox flags do not apply); no preamble is prepended (the session
 already carries the harness's system prompt); and `hello.attached` tells the overlay to
 drop its own chat dock, so selections go to the harness's composer instead
-(`packages/overlay/src/attached.ts`).
+(`packages/overlay/src/attached.ts`). The harness side of that — the page, the
+`/airship/*` routes, the composer chips — lives in `packages/dsh-plugin`.
 
 ## The site
 
