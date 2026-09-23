@@ -29,7 +29,7 @@ the editor also answers to a plain `+` and `-`.
 | --- | --- | --- | --- | --- |
 | Deselect | Esc | Esc | edit mode | Clear the selection. |
 | Move | V | V | edit mode | Hover highlights and clicks select. The default. |
-| Inspect | I | I | edit mode | Hover reads out an element's specs instead of selecting it. |
+| Inspect | I | I | edit mode | Hover reads out an element's specs; a click pins one — and, attached to a harness, hands it to that chat. |
 
 ## View
 

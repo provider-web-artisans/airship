@@ -51,6 +51,7 @@ import {
   surfaceToMode,
   type VisualEditTarget,
 } from "@airship/protocol";
+import { resolveServerSource } from "@airship/source/server";
 import { scanProjectTokens } from "@airship/source/tokens";
 import { type RawData, WebSocket, WebSocketServer } from "ws";
 import { bindUrl, buildAllowedHosts } from "./access";
@@ -232,6 +233,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   wss.on("connection", (ws: WebSocket) => {
     clients.add(ws);
     send(ws, {
+      attached: Boolean(opts.dsh?.url),
       defaultAgent: opts.agent ?? DEFAULT_AGENT,
       jobs: jobs.snapshots(),
       type: "hello",
@@ -304,6 +306,16 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       // Read-only, so deliberately *not* on `editChain`: a token scan touches no
       // files and must not queue behind a running edit, or the inspector would
       // sit tokenless for as long as the agent takes.
+      case "source":
+        send(ws, {
+          id: parsed.id,
+          source: resolveServerSource(cwd, {
+            element: parsed.element,
+            source: parsed.source,
+          }),
+          type: "source:result",
+        });
+        break;
       case "tokens":
         send(ws, {
           scan: scanProjectTokens(cwd, { refresh: parsed.refresh }),
