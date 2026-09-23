@@ -361,6 +361,25 @@ Gaps and wire quirks, handled explicitly rather than faked:
   `[exit code: N]` appended to the result text; the adapter strips the marker into
   `typed.exitCode` and leaves `isError` false, as Codex and pi do.
 
+#### Attached to a running harness
+
+`--dsh-url <host> --dsh-session <id>` selects a second path, `providers/dsh-attach.ts`,
+which does not spawn anything: it drives a session a person already has open in the
+harness GUI. The spawn path cannot reach one — the session store holds a `flock(2)` write
+lease for the process that owns it, and ACP's `session/resume` refuses a session that is
+still active — but the host's mux is multi-client, so the attach path is another *client*
+of the same host: the `/api` unary channel for commands and the `/api/remote.mux`
+WebSocket for the event stream, with a cookie minted from the host's own credential
+record. The wire shapes there are DSH's own, not ACP's, read off a live host running the
+pinned release; the reducer is tested against those frames.
+
+Three things differ from the spawn path and are deliberate: the conversation is the
+session's own (the harness keeps governing the turn — its permission preset, its approval
+UI — so `--safe` and the sandbox flags do not apply); no preamble is prepended (the session
+already carries the harness's system prompt); and `hello.attached` tells the overlay to
+drop its own chat dock, so selections go to the harness's composer instead
+(`packages/overlay/src/attached.ts`).
+
 ## The site
 
 `apps/web` does two jobs. It is Airship's home page, and it is the app the `run` targets point
