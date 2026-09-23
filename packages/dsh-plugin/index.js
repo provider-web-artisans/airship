@@ -59,6 +59,22 @@ function binary() {
 }
 
 /**
+ * Spawn Airship with these arguments. A binary that is a script — a
+ * checkout's `dist/index.js`, or the tests' fixtures — runs under this Node:
+ * only POSIX executes a script by its shebang, and Windows would refuse it.
+ * A bare name, or a `.cmd` shim, needs no help.
+ */
+function spawnAirship(args, options) {
+  const named = binary();
+  return SCRIPT_BINARY.test(named)
+    ? spawn(process.execPath, [named, ...args], options)
+    : spawn(named, args, options);
+}
+
+/** A binary that is a script rather than an executable. */
+const SCRIPT_BINARY = /\.(?:mjs|cjs|js)$/i;
+
+/**
  * The editor URL out of whatever a child has printed so far.
  *
  * Airship's `--json` banner is one pretty-printed object, so the buffer becomes
@@ -196,7 +212,7 @@ export function inspect(cwd) {
   return new Promise((resolve, reject) => {
     let child;
     try {
-      child = spawn(binary(), ["inspect", "--json", "--cwd", cwd], {
+      child = spawnAirship(["inspect", "--json", "--cwd", cwd], {
         cwd,
         env: process.env,
         stdio: ["ignore", "pipe", "pipe"],
@@ -314,7 +330,7 @@ function start({ port, command, agent, cwd, attach, mode }) {
 
     let child;
     try {
-      child = spawn(binary(), args, {
+      child = spawnAirship(args, {
         cwd: cwd ?? process.cwd(),
         env: process.env,
         stdio: ["ignore", "pipe", "pipe"],
