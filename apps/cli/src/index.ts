@@ -14,6 +14,7 @@ import { onGitFailure } from "@airship/server";
 import { runCommand } from "citty";
 import { DOCTOR_FLAGS, doctor } from "./commands/doctor";
 import { INIT_FLAGS, init } from "./commands/init";
+import { INSPECT_FLAGS, inspect } from "./commands/inspect";
 import { SERVE_FLAGS, serve } from "./commands/serve";
 import { CliError, didYouMean, EXIT, reportError } from "./lib/errors";
 import {
@@ -40,6 +41,11 @@ const SUBCOMMANDS = {
     command: init,
     flags: INIT_FLAGS,
     summary: "Create an airship.config.json for this project.",
+  },
+  inspect: {
+    command: inspect,
+    flags: INSPECT_FLAGS,
+    summary: "Report the dev server a launch here would target.",
   },
 } as const;
 
