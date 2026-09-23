@@ -131,6 +131,18 @@ type Passthrough = "passthrough";
  *    iframe in that document is the app's own — a video embed, a payment form —
  *    and installing a frame agent in it would be injecting into a third party
  *    for no purpose.
+ *
+ *    And only for *our own* frames. A frame the canvas creates is same-origin
+ *    by construction, so its requests carry `Sec-Fetch-Site: same-origin`. A
+ *    frame some other document owns — a harness that shows the editor in a
+ *    sidebar tab, an IDE panel — reports `same-site`, `cross-site` or `none`,
+ *    and to that document the editor is the whole page: it is a navigation as
+ *    far as the surface choice goes, and it takes the sticky preference or the
+ *    launch default like one. Without this, the editor could only ever be
+ *    reached in such a host by an explicit `?__airship=`, and the first in-app
+ *    link or surface switch — which drop the param — would replace it with a
+ *    bare frame answering to no shell. A missing `Sec-Fetch-Site` counts as
+ *    same-origin, which is the older behaviour exactly.
  * 3. A document navigation gets the sticky surface if one is set, else the
  *    launch default. A missing `Sec-Fetch-Dest` counts: the header is
  *    near-universal in browsers, and a client old enough to omit it is one
@@ -154,7 +166,7 @@ export function resolveMode(
     return explicit;
   }
   const dest = req.headers["sec-fetch-dest"];
-  if (dest === undefined || dest === "document") {
+  if (dest === undefined || dest === "document" || isForeignFrame(req, dest)) {
     const sticky = readSurfaceCookie(req.headers.cookie);
     return sticky ? surfaceToMode(sticky) : defaultMode;
   }
@@ -165,6 +177,21 @@ export function resolveMode(
     return "frame";
   }
   return "passthrough";
+}
+
+/**
+ * Is this an embedded document that some *other* origin's page is framing?
+ *
+ * The canvas only ever frames its own origin, so anything else framing the
+ * editor is a host — and the editor is its top-level content. See case 2 of
+ * `resolveMode`.
+ */
+function isForeignFrame(req: http.IncomingMessage, dest: string): boolean {
+  if (dest !== "iframe" && dest !== "embed" && dest !== "object") {
+    return false;
+  }
+  const site = req.headers["sec-fetch-site"];
+  return site !== undefined && site !== "same-origin";
 }
 
 /** The app path the shell should point its frames at, `__airship` stripped. */
@@ -391,6 +418,11 @@ function handleHttp(
           keepCsp: deps.keepCsp ?? false,
         });
         outHeaders["content-length"] = String(Buffer.byteLength(body));
+        // The same URL answers with a different document depending on who is
+        // asking — the surface cookie, `Sec-Fetch-Dest`, `Sec-Fetch-Site` —
+        // so a cached copy is a stale surface: a switch to inline would show
+        // the frame the browser kept from before. The shell says the same.
+        outHeaders["cache-control"] = "no-store";
         res.writeHead(status, outHeaders);
         res.end(body);
       });

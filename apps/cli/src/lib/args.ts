@@ -313,6 +313,28 @@ export const FLAGS: readonly FlagSpec[] = [
     type: "string",
   },
   {
+    group: "BACKEND",
+    help: "Attach to a dsh host that is already running and drive the session open in it, instead of spawning a child per turn. The harness keeps governing the turn: its permission preset decides what may run, and its own window is where a person answers.",
+    hint: "<url>",
+    name: "dsh-url",
+    type: "string",
+  },
+  {
+    group: "BACKEND",
+    help: "Session to drive on the attached host. Without it Airship creates a session, which appears in the harness like any other.",
+    hint: "<id>",
+    name: "dsh-session",
+    type: "string",
+  },
+  {
+    defaultHint: "DSH_HOME, then ~/.dsh",
+    group: "BACKEND",
+    help: "DSH_HOME of the host being attached to. Its credential record mints the request cookie, so this names the host's home, not the child's.",
+    hint: "<dir>",
+    name: "dsh-home",
+    type: "string",
+  },
+  {
     group: "GLOBAL",
     help: "Machine-readable JSON on stdout, no colour and no banner.",
     name: "json",

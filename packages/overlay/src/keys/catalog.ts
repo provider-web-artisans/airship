@@ -259,7 +259,7 @@ export const COMMANDS = [
     title: "Move",
   },
   {
-    doc: "Hover reads out an element's specs instead of selecting it.",
+    doc: "Hover reads out an element's specs; a click pins one — and, attached to a harness, hands it to that chat.",
     essential: true,
     group: "Selection",
     icon: "tool-inspect",

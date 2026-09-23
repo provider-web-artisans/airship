@@ -15,8 +15,18 @@ import {
   type ModelCatalogue,
   modeToSurface,
   type ServerEvent,
+  type SourceLocation,
+  surfaceToMode,
 } from "@airship/protocol";
 import { SEED_MODELS } from "@airship/protocol/models";
+import {
+  elementPath,
+  postSelection,
+  type RevealRequest,
+  revealRequest,
+  selectionConsoleLine,
+  selectionMessage,
+} from "./attached";
 import { AttrSet } from "./attr-set";
 import type { Point } from "./canvas/space";
 import type { SafeInset } from "./canvas/viewport";
@@ -221,6 +231,11 @@ const SURFACES: { icon: IconName; kind: AirshipSurface; label: string }[] = [
   { icon: "grid-view", kind: "canvas", label: "Canvas" },
   { icon: "layer-frame", kind: "inline", label: "Inline" },
 ];
+
+/** How many announced selections are kept by id for a reveal. */
+const ANNOUNCED_KEPT = 50;
+/** How long an attached selection waits for the server to find its file. */
+const SOURCE_RESOLVE_TIMEOUT_MS = 2500;
 
 /** Toolbar glyphs. Kept beside the bar rather than in `tools.ts` so the tool
  * model stays free of the icon set. */
@@ -688,6 +703,31 @@ export class AirshipApp {
   private agentMenu: MenuHandle | null = null;
   /** Whether a stored pick was found, which is what outranks `hello`. */
   private modelRestored = false;
+  /**
+   * The server drives a session that lives in the document framing this one
+   * (`hello.attached`). No chat dock then: selections go to that document,
+   * and the conversation happens there. See `attached.ts`.
+   */
+  private attached = false;
+  /**
+   * The selections announced to the harness, by the id each was given, so a
+   * chip clicked over there can bring its element back into view here. A
+   * bounded map: the newest `ANNOUNCED_KEPT` only, and a node that has left
+   * the document is found again by the path the message carried instead.
+   */
+  private readonly announced = new Map<string, Element>();
+  private announceSeq = 0;
+  /**
+   * The node a reveal is selecting, until `onSelected` sees it: that
+   * selection is the harness's own chip coming back, not a new one to announce.
+   */
+  private revealTarget: Element | null = null;
+  /** Source look-ups in flight for attached selections, by request id. */
+  private readonly sourceWaits = new Map<
+    string,
+    (source: SourceLocation | null) => void
+  >();
+  private sourceSeq = 0;
   private agentBtn!: HTMLElement;
   private awaiting = false;
   private applyingVisual = false;
@@ -733,6 +773,16 @@ export class AirshipApp {
     this.surface = modeToSurface(config.mode ?? "inline");
     this.appPathname = config.pathname;
     this.socket = new AirshipSocket(config.wsPath);
+    // The framing document may ask for a selection back (`onWindowMessage`);
+    // kept as a disposer so an overlay rebuilt in the same page does not stack
+    // a second listener on the first.
+    const hearWindow = (event: MessageEvent): void => {
+      this.onWindowMessage(event);
+    };
+    window.addEventListener("message", hearWindow);
+    this.disposers.push(() => {
+      window.removeEventListener("message", hearWindow);
+    });
     this.controller = new SelectionController(
       {
         onDeselect: () => this.clearSelectionScope(),
@@ -2399,6 +2449,13 @@ export class AirshipApp {
    * `__airship` is stripped from the target rather than set to the new surface,
    * so an explicit override in the current URL cannot outrank the preference we
    * just wrote and bounce the user straight back.
+   *
+   * Except when this document is itself inside someone else's frame — a
+   * harness sidebar, an IDE panel. There the cookie is not to be relied on:
+   * `SameSite=Lax` is not sent into a cross-site frame, so the proxy may never
+   * see the preference and would serve the launch default instead. The new
+   * surface is named in the URL as well, which the proxy honours before any
+   * cookie. It is the surface we are switching *to*, so it cannot bounce.
    */
   private switchSurface(next: AirshipSurface): void {
     if (next === this.surface) {
@@ -2415,6 +2472,9 @@ export class AirshipApp {
       window.location.origin
     );
     url.searchParams.delete(AIRSHIP_MODE_PARAM);
+    if (isEmbedded()) {
+      url.searchParams.set(AIRSHIP_MODE_PARAM, surfaceToMode(next));
+    }
     window.location.assign(url.toString());
   }
 
@@ -3111,12 +3171,15 @@ export class AirshipApp {
    * offering to show one would be a control that lies.
    */
   private syncDocks(): void {
-    const leftOn = this.isVisible("left");
-    const rightOn = this.isVisible("right");
     const modeScoped = Boolean(this.stage.mountFramesPanel);
     const frames = modeScoped && !this.editing;
+    // Attached, the left dock's chat has no business being on screen: the
+    // conversation is the harness's. The frames list still is, in view mode.
+    const chatOff = this.attached && !frames;
+    const leftOn = this.isVisible("left") && !chatOff;
+    const rightOn = this.isVisible("right");
     this.leftDock.classList.toggle(cls("hidden"), !leftOn);
-    this.leftPill.classList.toggle(cls("hidden"), leftOn);
+    this.leftPill.classList.toggle(cls("hidden"), leftOn || chatOff);
     this.rightDock.classList.toggle(cls("hidden"), !rightOn);
     this.rightPill.classList.toggle(
       cls("hidden"),
@@ -3161,8 +3224,28 @@ export class AirshipApp {
   private onSelected(sel: Selection): void {
     this.selected = sel;
     this.scanFrameTokens(sel.node);
-    this.setRight(true);
+    // Attached, a click is a way of pointing for the conversation next door,
+    // and a panel that opens on every one of them takes the canvas away. It
+    // stays where the person left it; the pill opens it when they want it.
+    if (!this.attached) {
+      this.setRight(true);
+    }
     this.panel.setSelection(sel);
+    // Only the Inspect tool talks to the harness. Move selects on the way to
+    // dragging, resizing and editing, and every one of those would otherwise
+    // rewrite the composer line; Inspect is the tool whose click *means*
+    // "this one" and nothing else.
+    // A reveal is the harness's own chip coming back into view, not a new
+    // selection: announcing it would hand the harness the chip it already has.
+    const revealed = this.revealTarget === sel.node;
+    this.revealTarget = null;
+    if (this.attached && this.tools.active === "inspect" && !revealed) {
+      this.announceSelection(sel);
+    } else if (!this.attached && isEmbedded()) {
+      console.warn(
+        "[airship] selected inside a frame, but this editor is not attached to a session; nothing posted"
+      );
+    }
     // The second half of `enterTextEdit`. Consumed unconditionally so a
     // selection that resolved to something else — a race the generation guard in
     // `select` can still produce — cannot leave the arming latched for the next
@@ -3173,6 +3256,135 @@ export class AirshipApp {
       this.panel.beginTextEdit(sel.node, pending.caret);
     }
     this.renderComposerChips();
+  }
+
+  /**
+   * Hand an Inspect selection to the harness, with its source resolved.
+   *
+   * The browser knows the file only for frameworks it can walk at runtime
+   * (React, Vue, Svelte). For anything else — an Astro page is plain HTML by
+   * the time it is here — the server does what it does for a turn: a scored
+   * search of the project for the element's classes and text. Asked first,
+   * answered off the edit chain, and given a short leash so a slow search
+   * cannot swallow the click: unresolved is still a selection.
+   */
+  private announceSelection(sel: Selection): void {
+    const resolved = sel.source?.file
+      ? Promise.resolve(sel.source)
+      : this.resolveSource(sel);
+    this.announceSeq += 1;
+    const id = `sel-${String(this.announceSeq)}`;
+    this.announced.set(id, sel.node);
+    while (this.announced.size > ANNOUNCED_KEPT) {
+      const oldest = this.announced.keys().next().value;
+      if (oldest === undefined) {
+        break;
+      }
+      this.announced.delete(oldest);
+    }
+    resolved.then((source) => {
+      const message = selectionMessage(
+        sel.element,
+        source,
+        window.location.href,
+        { id, path: elementPath(sel.node) }
+      );
+      // Two channels, because hosts differ: a frame's parent gets a message;
+      // a separate web contents (Electron's `<webview>`) has no parent to
+      // post to, but its embedder reads this console line. Both are cheap,
+      // and the receiver only acts on the one it can hear.
+      const told = postSelection(message);
+      console.info(selectionConsoleLine(message));
+      console.warn(
+        `[airship] selection <${sel.element.tagName}>${
+          source?.file
+            ? ` at ${source.file}${source.line ? `:${String(source.line)}` : ""}`
+            : " (no source found)"
+        } posted to ${String(told)} framing window(s) and announced on the console`
+      );
+    });
+  }
+
+  /**
+   * A framing document asking for a selection back: the harness, when its
+   * chip is clicked. Only an attached editor answers, and only for a node it
+   * announced (by id while the node lives, by path once the page reloaded).
+   */
+  private onWindowMessage(event: MessageEvent): void {
+    const ask = revealRequest(event.data);
+    if (!(ask && this.attached)) {
+      return;
+    }
+    const node = this.findAnnounced(ask);
+    if (!node) {
+      console.warn(
+        `[airship] reveal: nothing here matches ${ask.id ?? ask.path ?? "the request"}`
+      );
+      return;
+    }
+    this.revealTarget = node;
+    node.scrollIntoView?.({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+    this.controller.select(node, undefined, "replace");
+  }
+
+  /** The announced node a reveal names, if it is still in a document. */
+  private findAnnounced(ask: RevealRequest): Element | null {
+    const kept = ask.id ? this.announced.get(ask.id) : undefined;
+    if (kept?.isConnected) {
+      return kept;
+    }
+    if (!ask.path) {
+      return null;
+    }
+    // The path was made in the node's own document: the page inline, or one
+    // of the frames on a canvas.
+    const docs: Document[] = [document];
+    for (const frame of document.querySelectorAll("iframe")) {
+      try {
+        if (frame.contentDocument) {
+          docs.push(frame.contentDocument);
+        }
+      } catch {
+        // Cross-origin; not one of ours.
+      }
+    }
+    for (const doc of docs) {
+      try {
+        const found = doc.querySelector(ask.path);
+        if (found) {
+          return found;
+        }
+      } catch {
+        // Not a selector this document takes.
+      }
+    }
+    return null;
+  }
+
+  /** Ask the server where a selection lives; null after a short wait. */
+  private resolveSource(sel: Selection): Promise<SourceLocation | null> {
+    this.sourceSeq += 1;
+    const id = `src-${String(this.sourceSeq)}`;
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.sourceWaits.delete(id);
+        resolve(sel.source);
+      }, SOURCE_RESOLVE_TIMEOUT_MS);
+      this.sourceWaits.set(id, (source) => {
+        clearTimeout(timer);
+        resolve(source ?? sel.source);
+      });
+      this.socket.send({
+        element: sel.element,
+        id,
+        source: sel.source,
+        type: "source",
+      });
+    });
   }
 
   /**
@@ -4029,6 +4241,11 @@ export class AirshipApp {
         if (!this.modelRestored) {
           this.setAgent(ev.defaultAgent);
         }
+        if (this.attached !== Boolean(ev.attached)) {
+          this.attached = Boolean(ev.attached);
+          this.syncDocks();
+          this.afterDockToggle();
+        }
         // The snapshot is the only thing that can tell us a turn ended while we
         // were not listening — see `reconcileAwaiting`.
         this.reconcileAwaiting(ev.jobs);
@@ -4077,6 +4294,12 @@ export class AirshipApp {
       case "history":
         this.renderHistory(ev.entries);
         break;
+      case "source:result": {
+        const waiting = this.sourceWaits.get(ev.id);
+        this.sourceWaits.delete(ev.id);
+        waiting?.(ev.source);
+        break;
+      }
       case "tokens:result":
         // The panel subscribes to the registry and rebuilds itself, which is
         // what `refresh()` here could not do: it re-seeds unless the element's
@@ -4796,4 +5019,16 @@ function applyLabel(
 ): string {
   const base = `Applied ${changeSummary(styleCount, moveCount, structureCount, attrCount)}`;
   return note ? `${base}. ${note}` : base;
+}
+
+/**
+ * Is this document framed by another one? A cross-origin parent throws on
+ * property access, which is itself the answer.
+ */
+function isEmbedded(): boolean {
+  try {
+    return window.parent !== window;
+  } catch {
+    return true;
+  }
 }

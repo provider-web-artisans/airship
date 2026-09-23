@@ -56,7 +56,9 @@ const PORT_ENV = /\bPORT=(\d{2,5})/;
  * A malformed one is the app's problem, not a reason to refuse to launch — port
  * detection just falls through to the common ports.
  */
-function readPackageJson(cwd: string): Record<string, unknown> | undefined {
+export function readPackageJson(
+  cwd: string
+): Record<string, unknown> | undefined {
   const path = join(cwd, "package.json");
   if (!existsSync(path)) {
     return;

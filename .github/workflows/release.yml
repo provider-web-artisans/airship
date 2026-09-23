@@ -2,7 +2,7 @@ name: Release
 
 run-name: "Release · ${{ inputs.tag || github.ref_name }}"
 
-# Publishes @airshiplabs/cli to npm when a cli-v* tag is pushed. Cut the release
+# Publishes @provider-web-artisans/cli to npm when a cli-v* tag is pushed. Cut the release
 # with `make release` (bumps apps/cli/package.json, commits, tags) then push the
 # tag — see scripts/release.sh.
 #
@@ -73,7 +73,7 @@ jobs:
           TAG="${TAG_REF#cli-v}"
           PKG=$(node -p "require('./apps/cli/package.json').version")
           if [ "$TAG" != "$PKG" ]; then
-            echo "::error::Tag cli-v$TAG does not match @airshiplabs/cli version $PKG (cut releases with 'make release')"
+            echo "::error::Tag cli-v$TAG does not match @provider-web-artisans/cli version $PKG (cut releases with 'make release')"
             exit 1
           fi
 
@@ -84,7 +84,7 @@ jobs:
       # clean publish, and the tarball ships a package.json and a LICENSE.
       # v0.2.0 went out exactly that way.
       - name: Build the CLI
-        run: pnpm turbo run build --filter=@airshiplabs/cli
+        run: pnpm turbo run build --filter=@provider-web-artisans/cli
 
       # Pack with pnpm, publish that exact tarball with npm. Neither tool does
       # both halves: only `pnpm pack` rewrites the `workspace:*` devDependencies
@@ -96,7 +96,7 @@ jobs:
         id: pack
         working-directory: apps/cli
         run: |
-          TGZ="$RUNNER_TEMP/airshiplabs-cli.tgz"
+          TGZ="$RUNNER_TEMP/provider-web-artisans-cli.tgz"
           pnpm pack --out "$TGZ"
           echo "tgz=$TGZ" >> "$GITHUB_OUTPUT"
 

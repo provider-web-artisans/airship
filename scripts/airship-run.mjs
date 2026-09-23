@@ -48,7 +48,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const CLI_PACKAGE = "@airshiplabs/cli";
+const CLI_PACKAGE = "@provider-web-artisans/cli";
 const CLI_ENTRY = join(ROOT, "apps", "cli", "dist", "index.js");
 
 // vendor-assets.mjs copies the overlay IIFEs and the editor fonts in here after
@@ -153,7 +153,7 @@ function splitArgs(argv) {
  * apps/cli plus every packages/* — the package ROOTS, not their src/.
  *
  * Scanning src/ alone would be wrong, and quietly so. `turbo run build
- * --filter=@airshiplabs/cli --dry=json` reports the real input set, and it
+ * --filter=@provider-web-artisans/cli --dry=json` reports the real input set, and it
  * reaches well outside src/: the CLI hashes README.md, package.json,
  * tsconfig.json, tsup.config.ts, vitest.config.ts and scripts/vendor-assets.mjs,
  * while @airship/editor-icons is generated from 507 SVGs under assets/ plus

@@ -1,8 +1,8 @@
 # Airship
 
-[![npm](https://img.shields.io/npm/v/@airshiplabs/cli)](https://www.npmjs.com/package/@airshiplabs/cli)
-[![node](https://img.shields.io/node/v/@airshiplabs/cli)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/@airshiplabs/cli)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@provider-web-artisans/cli)](https://www.npmjs.com/package/@provider-web-artisans/cli)
+[![node](https://img.shields.io/node/v/@provider-web-artisans/cli)](https://nodejs.org)
+[![license](https://img.shields.io/npm/l/@provider-web-artisans/cli)](LICENSE)
 
 **Visual editor for your codebase.**
 
@@ -13,7 +13,7 @@ without rebuilding your UI in a separate design tool.
 ![Airship mid-edit: the prompt "Turn this into a github icon" streaming its reads, writes and edits, a desktop and an iPhone frame side by side on the canvas, and the Edit inspector open on the selection](media/inspector-edit.png)
 
 ```bash
-npx @airshiplabs/cli --target 3000
+npx @provider-web-artisans/cli --target 3000
 ```
 
 No plugin. No config. Nothing added to your dependencies or your bundle.
@@ -38,14 +38,14 @@ required.
 **2. Point Airship at your dev server.**
 
 ```bash
-npx @airshiplabs/cli --target 3000
+npx @provider-web-artisans/cli --target 3000
 ```
 
 Airship connects to the port you're already running and opens the visual editor on the next
 free port. Or install it once and use the `airship` binary:
 
 ```bash
-npm i -g @airshiplabs/cli
+npm i -g @provider-web-artisans/cli
 airship --target 3000
 ```
 
@@ -195,6 +195,8 @@ you what you're giving up at startup.
 worth knowing before you pick it: it cannot accept a screenshot, it has no sandbox, and it cannot
 fork a session. `--safe` exports `DSH_PERMISSION_MODE=read-only` to the child, but dsh's own
 settings can outrank that variable — an isolated `--dsh-agent-dir` is what makes it hold.
+It can also drive a harness that is already running instead of starting its own, with
+`--dsh-url` — see the [backend flags](#backend).
 
 Undo is Airship's, not the agent's. It keeps the previous version of every file it touches, so
 undo works on all five. One catch: `codex`, `opencode`, `pi` and `dsh` get that previous version
@@ -328,6 +330,19 @@ flags below are the resting default it starts from.
 | `--opencode-url <url>` | Attach to a running `opencode serve` instead of starting one. | |
 | `--opencode-agent <name>` | Run as a named opencode agent. | its own |
 | `--opencode-config <file>` | JSON file merged into the opencode server config. | |
+| `--dsh-path <path>` | Path to the `dsh` binary. | found on PATH |
+| `--dsh-agent-dir <dir>` | `DSH_HOME` for a `dsh` Airship starts, holding the profile it boots and its sessions. | `~/.dsh` |
+| `--dsh-model <id>` | Model for the `dsh` backend. | `--model`, then the agent's own |
+| `--dsh-url <url>` | Drive the session already open in a running harness, instead of starting one. | |
+| `--dsh-session <id>` | Which session to drive on that host. | a new one |
+| `--dsh-home <dir>` | `DSH_HOME` of the host being attached to; its credential record mints the request cookie. | `$DSH_HOME`, then `~/.dsh` |
+
+`--dsh-url` is not a spawn, and that is the point of it: the harness window and Airship's chat
+become one conversation, so a change asked for on the canvas lands in the session the person is
+already reading. The harness keeps governing the turn — its permission preset decides what may
+run, and its own window is where a person answers — which means `--safe` does not apply on that
+path. No system preamble is prepended either: the session already carries the harness's own, and a
+second one would land in its history as if the user had typed it.
 
 `--codex-config` reads the shape of the value: `true`/`false` become TOML booleans and anything
 numeric becomes a number, so `--codex-config network_access=true` sends a boolean, not the string.

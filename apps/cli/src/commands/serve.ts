@@ -12,6 +12,7 @@ import {
   type AgentKind,
   type AirshipSurface,
   type CodexSettings,
+  checkAttach,
   checkAuth,
   type DshSettings,
   type Effort,
@@ -77,6 +78,9 @@ export const SERVE_FLAGS: readonly string[] = [
   "dsh-model",
   "dsh-path",
   "dsh-agent-dir",
+  "dsh-url",
+  "dsh-session",
+  "dsh-home",
   ...GLOBAL_FLAGS,
 ];
 
@@ -146,6 +150,9 @@ export function toServeOptions(settings: Settings, cwd: string): ServeOptions {
     dsh: {
       agentDir: asString(settings, "dsh-agent-dir"),
       dshPath: asString(settings, "dsh-path"),
+      home: asString(settings, "dsh-home"),
+      sessionId: asString(settings, "dsh-session"),
+      url: asString(settings, "dsh-url"),
     } satisfies DshSettings,
     effort: effort ? (requireEnum(effort, "effort") as Effort) : undefined,
     exec: asString(settings, "exec"),
@@ -313,9 +320,20 @@ export const serve = defineCommand({
     const bindHost = opts.host ?? "127.0.0.1";
     const port = opts.port ?? (await firstFreePort(targetPort + 1, bindHost));
 
-    // Attaching to a remote server needs no local binary, so the PATH half of
-    // `checkAuth` would be a false alarm there.
-    if (!(opts.agent === "opencode" && opts.opencode.url)) {
+    // Attaching needs no local binary, so the PATH half of `checkAuth` would be
+    // a false alarm on either attach path. A dsh host is checked by asking it
+    // instead: the cookie comes from disk, so a wrong home, a dead port and a
+    // host that never served the Web UI are told apart here rather than at the
+    // first edit.
+    if (opts.agent === "dsh" && opts.dsh.url) {
+      const attached = await checkAttach({
+        home: opts.dsh.home,
+        url: opts.dsh.url,
+      });
+      if (!attached.ok) {
+        note(`\n  ⚠ ${attached.reason}\n`);
+      }
+    } else if (!(opts.agent === "opencode" && opts.opencode.url)) {
       const auth = await checkAuth(opts.agent);
       if (!auth.ok) {
         note(`\n  ⚠ ${auth.reason}\n`);
